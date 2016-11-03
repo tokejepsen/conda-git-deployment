@@ -1,0 +1,4 @@
+dependencies:
+   - git:
+     - "https://github.com/tokejepsen/conda-git-example.git":
+        - "python $REPO_PATH/startup.py"

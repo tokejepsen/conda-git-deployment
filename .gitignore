@@ -1,0 +1,6 @@
+*.pyc
+windows/*
+linux/*
+osx/*
+repositories/*
+environment.yml
