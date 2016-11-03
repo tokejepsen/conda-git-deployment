@@ -59,6 +59,17 @@ def get_configuration():
 
     yaml_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
                                              "environment.yml"))
+
+    if not os.path.exists(yaml_file):
+        msg = "Could not find the environment.yml file in {path}."
+        msg += "\nPlease create an environment file and save it as "
+        msg += "{path}/environment.yml."
+        msg += "\nYou can also modify the included example "
+        msg += "{path}/environment.yml.example, and rename to "
+        msg += "{path}/environment.yml."
+        path = os.path.dirname(yaml_file).replace("\\", "/")
+        raise ValueError(msg.format(path=path))
+
     with open(yaml_file, "r") as stream:
         try:
             return yaml.load(stream)
