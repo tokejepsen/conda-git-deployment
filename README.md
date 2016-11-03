@@ -21,8 +21,14 @@ dependencies:
    - git:
      - "https://github.com/tokejepsen/conda-git-example.git":
         - "python $REPO_PATH/startup.py"
-     - "https://github.com/pyblish/pyblish-base.git"
 ```
 
-You can add git repositories (remote or local), which will be cloned and updated when ever the deployment is started.  
-You start the deployment by double-clicking the ```startup.bat``` on Windows, or running the ```startup.bat``` file in a terminal. OSX and Linux will follow later.
+*Window* - You start the deployment by double-clicking the ```startup.bat``` on Windows, or running the ```startup.bat``` file in a terminal.
+
+*Linux* - You start the deployment by executing this in a terminal; ```sh path/to/repository/startup.sh```.
+
+*OSX* - Coming soon.
+
+Using the example above will download the ```https://github.com/tokejepsen/conda-git-example.git``` repository, and execute the ```startup.py``` file inside. ```startup.py``` is dependent on PySide being installed, so it installs PySide with conda and displays a "Hello World" PySide window.
+
+You can add git repositories (remote or local), which will be cloned and updated when ever the deployment is started.
