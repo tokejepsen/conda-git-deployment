@@ -1,4 +1,5 @@
-parent_path=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
+SCRIPT=$(readlink -f "$0")
+parent_path=$(dirname "$SCRIPT")
 
 # Linux environment
 echo "OS is Linux"
