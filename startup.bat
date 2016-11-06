@@ -10,6 +10,6 @@ IF EXIST %~dp0windows\miniconda GOTO INSTALLEXISTS
 :INSTALLEXISTS
 
 set PATH=%~dp0windows\miniconda;%~dp0windows\miniconda\Library\bin;%~dp0windows\miniconda\Scripts;%PATH%
-set PYTHONPATH=%~dp0windows\miniconda\Lib\site-packages
+set PYTHONPATH=%~dp0windows\miniconda\Lib\site-packages;%PYTHONPATH%
 
 python %~dp0conda_git_deployment\update.py
