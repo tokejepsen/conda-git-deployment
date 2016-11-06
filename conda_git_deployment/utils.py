@@ -1,12 +1,7 @@
 import os
 import imp
 import traceback
-
-yaml = None
-try:
-    import yaml
-except:
-    import ruamel_yaml as yaml
+import subprocess
 
 
 def check_executable(executable):
@@ -61,14 +56,12 @@ def get_configuration():
                                              "environment.yml"))
 
     if not os.path.exists(yaml_file):
-        msg = "Could not find the environment.yml file in {path}."
-        msg += "\nPlease create an environment file and save it as "
-        msg += "{path}/environment.yml."
-        msg += "\nYou can also modify the included example "
-        msg += "{path}/environment.yml.example, and rename to "
-        msg += "{path}/environment.yml."
-        path = os.path.dirname(yaml_file).replace("\\", "/")
-        raise ValueError(msg.format(path=path))
+        return None
+
+    if not check_module("yaml"):
+        subprocess.call(["conda", "install", "yaml", "-y"])
+
+    import yaml
 
     with open(yaml_file, "r") as stream:
         try:
