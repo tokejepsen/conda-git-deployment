@@ -1,6 +1,5 @@
 import os
 import imp
-import traceback
 import subprocess
 
 
@@ -50,21 +49,33 @@ def check_module(module_name):
         return False
 
 
-def get_configuration():
-
-    yaml_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
-                                             "environment.yml"))
-
-    if not os.path.exists(yaml_file):
-        return None
+def ensure_yaml():
 
     if not check_module("yaml"):
         subprocess.call(["conda", "install", "yaml", "-y"])
 
+
+def read_yaml(yaml_data):
+
+    ensure_yaml()
+
     import yaml
 
-    with open(yaml_file, "r") as stream:
-        try:
-            return yaml.load(stream)
-        except:
-            print traceback.format_exc()
+    if os.path.isfile(yaml_data):
+        with open(yaml_data, "r") as stream:
+                return yaml.load(stream)
+
+    if isinstance(yaml_data, str) or isinstance(yaml_data, unicode):
+        return yaml.load(yaml_data)
+
+
+def write_yaml(data, file_path):
+
+    ensure_yaml()
+    import yaml
+
+    f = open(file_path, "w")
+    try:
+        yaml.dump(data, f, default_flow_style=False)
+    finally:
+        f.close()
