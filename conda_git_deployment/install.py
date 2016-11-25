@@ -1,51 +1,26 @@
 import os
+import sys
 import subprocess
-import platform
 
 import utils
 
 
 def main():
 
-    conf = utils.get_configuration()
-    if not conf:
-        msg = "\n\nCould not find the environment.yml file in {path}."
-        msg += "\nPlease create an environment file and save it as "
-        msg += "{path}/environment.yml."
-        msg += "\nYou can also modify the included example "
-        msg += "{path}/environment.yml.example, and rename to "
-        msg += "{path}/environment.yml."
-        msg += "\n\nA default environment will be created."
-        path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        path = path.replace("\\", "/")
+    conf = utils.read_yaml(sys.argv[1])
+    os.remove(sys.argv[1])
 
-        print msg.format(path=path)
-
-        subprocess.call(["conda", "create", "-n", "default", "python", "-y"])
-
-        args = []
-        if platform.system().lower() == "windows":
-            args.extend(["start", "activate", "default"])
-
-        if platform.system().lower() == "linux":
-            terminal_commands = ["gnome-terminal", "xterm", "konsole"]
-            for cmd in terminal_commands:
-                if utils.check_executable(cmd):
-                    args.extend([cmd, "-e", "source activate default"])
-
-        subprocess.call(args, shell=True)
-        return
-
-    # clone repositories
-    repositories_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                     "..", "repositories"))
+    # Clone repositories.
+    repositories_path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__), "..", "repositories", conf["name"]
+        )
+    )
 
     repositories = []
     for item in conf["dependencies"]:
         if "git" in item:
             for repo in item["git"]:
-
-                data = {}
 
                 repo_path = ""
                 if isinstance(repo, str):
@@ -53,9 +28,13 @@ def main():
                 if isinstance(repo, dict):
                     repo_path = repo.keys()[0]
 
+                data = {"url": repo_path}
+
                 name = repo_path.split("/")[-1].replace(".git", "")
                 if not name:
                     name = repo_path.split("/")[-2]
+                if "@" in name:
+                    name = name.split("@")[0]
                 data["name"] = name
 
                 if not os.path.exists(repositories_path):
@@ -71,7 +50,7 @@ def main():
 
                 repositories.append(data)
 
-    # update repositories
+    # Update repositories.
     for repo in repositories:
         print repo["name"]
         subprocess.call(["git", "pull"], cwd=repo["path"])
@@ -80,21 +59,20 @@ def main():
         subprocess.call(["git", "submodule", "update", "--recursive"],
                         cwd=repo["path"])
 
-    # install repositories with pip
-    source_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                               ".."))
+    # Checkout any commits/tags.
     for repo in repositories:
-        if "setup.py" in os.listdir(repo["path"]):
-            url = "git+file://" + repo["path"]
-            subprocess.call(["pip", "install", url], cwd=source_path)
+        if "@" in repo["url"]:
+            tag = repo["url"].split("@")[1]
+            if tag:
+                subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
-    # execute start commands
+    # Execute start commands.
     for repo in repositories:
         if "commands" in repo.keys():
             for cmd in repo["commands"]:
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
                 print "Executing: " + cmd
-                subprocess.Popen(cmd, shell=True)
+                subprocess.call(cmd, shell=True, cwd=repo["path"])
 
 
 if __name__ == "__main__":

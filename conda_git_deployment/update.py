@@ -21,5 +21,5 @@ if __name__ == "__main__":
     main()
 
     # execute install
-    path = os.path.join(os.path.dirname(__file__), "install.py")
+    path = os.path.join(os.path.dirname(__file__), "environment.py")
     subprocess.call(["python", path])
