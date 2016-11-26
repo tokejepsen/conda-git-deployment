@@ -1,5 +1,4 @@
 import os
-import sys
 import subprocess
 
 import utils
@@ -7,8 +6,8 @@ import utils
 
 def main():
 
-    conf = utils.read_yaml(sys.argv[1])
-    os.remove(sys.argv[1])
+    conf = utils.read_yaml(utils.get_arguments()["unknown"][0])
+    os.remove(utils.get_arguments()["unknown"][0])
 
     # Clone repositories.
     repositories_path = os.path.abspath(
@@ -16,6 +15,8 @@ def main():
             os.path.dirname(__file__), "..", "repositories", conf["name"]
         )
     )
+
+    os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
 
     repositories = []
     for item in conf["dependencies"]:
@@ -51,13 +52,14 @@ def main():
                 repositories.append(data)
 
     # Update repositories.
-    for repo in repositories:
-        print repo["name"]
-        subprocess.call(["git", "pull"], cwd=repo["path"])
-        subprocess.call(["git", "submodule", "update", "--init",
-                         "--recursive"], cwd=repo["path"])
-        subprocess.call(["git", "submodule", "update", "--recursive"],
-                        cwd=repo["path"])
+    if utils.get_arguments()["update"]:
+        for repo in repositories:
+            print repo["name"]
+            subprocess.call(["git", "pull"], cwd=repo["path"])
+            subprocess.call(["git", "submodule", "update", "--init",
+                             "--recursive"], cwd=repo["path"])
+            subprocess.call(["git", "submodule", "update", "--recursive"],
+                            cwd=repo["path"])
 
     # Checkout any commits/tags.
     for repo in repositories:

@@ -15,4 +15,4 @@ echo %pythonpath%|find /i "%np%">nul  || set pythonpath=%pythonpath%;%np%
 set np=%~dp0windows\miniconda;%~dp0windows\miniconda\Library\bin;%~dp0windows\miniconda\Scripts
 echo %path%|find /i "%np%">nul  || set path=%path%;%np%
 
-python %~dp0conda_git_deployment\update.py
+python %~dp0conda_git_deployment\update.py %*

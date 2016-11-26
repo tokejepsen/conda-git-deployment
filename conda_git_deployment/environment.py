@@ -3,7 +3,6 @@ import subprocess
 import platform
 import tempfile
 import requests
-import json
 
 
 import utils
@@ -82,9 +81,13 @@ def main():
     )
     try:
         utils.write_yaml(env_conf, filename)
-        subprocess.call([
-            "conda", "env", "create", "--force", "-f", filename
-        ])
+
+        args = ["conda", "env", "create"]
+        if utils.get_arguments()["update"]:
+            args.append("--force")
+        args.extend(["-f", filename])
+
+        subprocess.call(args)
     finally:
         # Clean up the temporary file
         os.remove(filename)
@@ -95,6 +98,10 @@ def main():
             env_conf["name"],
             os.path.join(os.path.dirname(__file__), "install.py"),
             data_file]
+
+    if utils.get_arguments()["update"]:
+        args.append("--update")
+
     subprocess.call(args)
 
 

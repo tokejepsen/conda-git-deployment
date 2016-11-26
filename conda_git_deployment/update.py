@@ -18,8 +18,15 @@ def main():
 
 if __name__ == "__main__":
 
-    main()
+    if utils.get_arguments()["update"]:
+        main()
 
     # execute install
-    path = os.path.join(os.path.dirname(__file__), "environment.py")
-    subprocess.call(["python", path])
+    args = [
+        "python", os.path.join(os.path.dirname(__file__), "environment.py")
+    ]
+
+    if utils.get_arguments()["update"]:
+        args.append("--update")
+
+    subprocess.call(args)

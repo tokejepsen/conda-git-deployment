@@ -1,6 +1,7 @@
 import os
 import imp
 import subprocess
+import argparse
 
 
 def check_executable(executable):
@@ -79,3 +80,17 @@ def write_yaml(data, file_path):
         yaml.dump(data, f, default_flow_style=False)
     finally:
         f.close()
+
+
+def get_arguments():
+
+    parser = argparse.ArgumentParser(description="conda-git-deployment")
+
+    parser.add_argument('--update', action="store_true", default=False,
+                        dest="update",
+                        help="Rebuild and updates an environment.")
+
+    args, unknown = parser.parse_known_args()
+    results = vars(args)
+    results["unknown"] = unknown
+    return results
