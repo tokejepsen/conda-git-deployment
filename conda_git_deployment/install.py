@@ -68,6 +68,10 @@ def main():
             if tag:
                 subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
+    # Add environment site packages to os.environ
+    path = os.path.join(os.environ["CONDA_PREFIX"], "lib", "site-packages")
+    os.environ["PYTHONPATH"] += os.pathsep + path
+
     # Execute start commands.
     for repo in repositories:
         if "commands" in repo.keys():
