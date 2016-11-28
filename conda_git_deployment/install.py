@@ -68,6 +68,16 @@ def main():
             if tag:
                 subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
+    # Install any setup.py
+    # Query if a "build" directory is present to determine whether a repository
+    # has been installed.
+    for repo in repositories:
+        list_dir = os.listdir(repo["path"])
+        if (("setup.py" in list_dir and "build" not in list_dir) or
+           utils.get_arguments()["update"]):
+            args = ["python", "setup.py", "install"]
+            subprocess.call(args, cwd=repo["path"])
+
     # Add environment site packages to os.environ
     path = os.path.join(os.environ["CONDA_PREFIX"], "lib", "site-packages")
     os.environ["PYTHONPATH"] += os.pathsep + path
