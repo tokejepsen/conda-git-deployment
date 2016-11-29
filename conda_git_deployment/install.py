@@ -1,5 +1,6 @@
 import os
 import subprocess
+import tempfile
 
 import utils
 
@@ -71,16 +72,36 @@ def main():
     # Install any setup.py
     # Query if a "build" directory is present to determine whether a repository
     # has been installed.
-    for repo in repositories:
-        list_dir = os.listdir(repo["path"])
-        if (("setup.py" in list_dir and "build" not in list_dir) or
-           utils.get_arguments()["update"]):
-            args = ["python", "setup.py", "install"]
-            subprocess.call(args, cwd=repo["path"])
+    if utils.get_arguments()["update"]:
+        for repo in repositories:
+            if "setup.py" in os.listdir(repo["path"]):
+                args = ["python", "setup.py", "develop"]
+                subprocess.call(args, cwd=repo["path"])
 
     # Add environment site packages to os.environ
     path = os.path.join(os.environ["CONDA_PREFIX"], "lib", "site-packages")
     os.environ["PYTHONPATH"] += os.pathsep + path
+
+    # Add sys.path to os.environ["PYTHONPATH"], because conda only modifies
+    # sys.path which gets lost when launching any detached subprocesses.
+    # This get a little complicated due to be in the a process that hasn't
+    # picked up on the changes, hence going through a subprocess.
+    python_file = os.path.join(os.path.dirname(__file__), "write_sys_path.py")
+    data_file = os.path.join(
+        tempfile.gettempdir(), "data_%s.yml" % os.getpid()
+    )
+    subprocess.call(["python", python_file, data_file])
+
+    paths = []
+    with open(data_file, "r") as f:
+        paths += utils.read_yaml(f.read())
+    os.remove(data_file)
+
+    for path in paths:
+        if path.lower().startswith(repositories_path.lower()):
+            os.environ["PYTHONPATH"] += os.pathsep + path
+        if path.endswith(".egg"):
+            os.environ["PYTHONPATH"] += os.pathsep + path
 
     # Execute start commands.
     for repo in repositories:

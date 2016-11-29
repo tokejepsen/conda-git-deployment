@@ -79,18 +79,17 @@ def main():
     filename = os.path.join(
         tempfile.gettempdir(), 'env_%s.yml' % os.getpid()
     )
-    try:
-        utils.write_yaml(env_conf, filename)
 
-        args = ["conda", "env", "create"]
-        if utils.get_arguments()["update"]:
-            args.append("--force")
-        args.extend(["-f", filename])
+    utils.write_yaml(env_conf, filename)
 
-        subprocess.call(args)
-    finally:
-        # Clean up the temporary file
-        os.remove(filename)
+    args = ["conda", "env", "create"]
+    if utils.get_arguments()["update"]:
+        args.append("--force")
+    args.extend(["-f", filename])
+
+    return_code = subprocess.call(args)
+
+    os.remove(filename)
 
     # Spawning a new process to get the correct python executable and
     # passing data via file on disk.
@@ -100,6 +99,10 @@ def main():
             data_file]
 
     if utils.get_arguments()["update"]:
+        args.append("--update")
+
+    # If its the first installation, we need to pass update to install.py
+    if not return_code:
         args.append("--update")
 
     subprocess.call(args)
