@@ -89,6 +89,9 @@ def get_arguments():
     parser.add_argument('--update', action="store_true", default=False,
                         dest="update",
                         help="Rebuild and updates an environment.")
+    parser.add_argument('--environment', action="store", default="",
+                        dest="environment",
+                        help="Environment to process.")
 
     args, unknown = parser.parse_known_args()
     results = vars(args)

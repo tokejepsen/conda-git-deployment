@@ -1,8 +1,8 @@
 import os
 import subprocess
-import platform
 import tempfile
 import requests
+import sys
 
 
 import utils
@@ -23,34 +23,25 @@ def main():
         with open(path, "r") as f:
             environment = f.read().rstrip()
 
+    if utils.get_arguments()["environment"]:
+        environment = utils.get_arguments()["environment"]
+
     # Create a default enviroment if no environment file was found.
     # NOT FINISHED!
     if not environment:
-        msg = "\n\nCould not find the environment.yml file in {path}."
-        msg += "\nPlease create an environment file and save it as "
-        msg += "{path}/environment.yml."
+
+        msg = "\n\nCould not find the \"environment.conf\" file in \"{path}\"."
+        msg += "\nPlease create an environment pointer file and save it as "
+        msg += "\"{path}/environment.conf\"."
         msg += "\nYou can also modify the included example "
-        msg += "{path}/environment.yml.example, and rename to "
-        msg += "{path}/environment.yml."
-        msg += "\n\nA default environment will be created."
+        msg += "\"{path}/environment.conf.example\", and rename to "
+        msg += "\"{path}/environment.conf\"."
+        msg += "\n\nYou are now in the root environment of Conda."
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         path = path.replace("\\", "/")
 
         print msg.format(path=path)
 
-        subprocess.call(["conda", "create", "-n", "default", "python", "-y"])
-
-        args = []
-        if platform.system().lower() == "windows":
-            args.extend(["start", "activate", "default"])
-
-        if platform.system().lower() == "linux":
-            terminal_commands = ["gnome-terminal", "xterm", "konsole"]
-            for cmd in terminal_commands:
-                if utils.check_executable(cmd):
-                    args.extend([cmd, "-e", "source activate default"])
-
-        subprocess.call(args, shell=True)
         return
 
     # Get environment data.
@@ -59,6 +50,9 @@ def main():
         f = open(environment, "r")
         env_conf = utils.read_yaml(f.read())
         f.close()
+    else:
+        msg = "Could not find \"{0}\" on disk."
+        print msg.format(environment)
 
     if not env_conf:
         env_conf = utils.read_yaml(requests.get(environment).text)
@@ -98,8 +92,7 @@ def main():
             os.path.join(os.path.dirname(__file__), "install.py"),
             data_file]
 
-    if utils.get_arguments()["update"]:
-        args.append("--update")
+    args.extend(sys.argv[1:])
 
     # If its the first installation, we need to pass update to install.py
     if not return_code:

@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 import utils
 
@@ -26,7 +27,6 @@ if __name__ == "__main__":
         "python", os.path.join(os.path.dirname(__file__), "environment.py")
     ]
 
-    if utils.get_arguments()["update"]:
-        args.append("--update")
+    args.extend(sys.argv[1:])
 
     subprocess.call(args)
