@@ -26,8 +26,7 @@ def main():
     if utils.get_arguments()["environment"]:
         environment = utils.get_arguments()["environment"]
 
-    # Create a default enviroment if no environment file was found.
-    # NOT FINISHED!
+    # If no environment is defined, put user in root environment.
     if not environment:
 
         msg = "\n\nCould not find the \"environment.conf\" file in \"{path}\"."
@@ -36,7 +35,8 @@ def main():
         msg += "\nYou can also modify the included example "
         msg += "\"{path}/environment.conf.example\", and rename to "
         msg += "\"{path}/environment.conf\"."
-        msg += "\n\nYou are now in the root environment of Conda."
+        msg += "\n\nYou are in the root environment of Conda. "
+        msg += "The \"conda\" command is available to use now."
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         path = path.replace("\\", "/")
 
