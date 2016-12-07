@@ -1,18 +1,31 @@
 # conda-git-deployment
 
-**Goal**
+## Goal
 
 To simplify deploying git based repositories.
 
-**Dependencies**
+## Responsibilities
+
+In order to accurately mirror an environment with git repositories, this project has to take on some responsibilities;
+
+- Git Cloning/Updating.
+- Environment.
+- Command Execution.
+
+## Dependencies
 
 This package does not have any dependenies on external packages or modules. It downloads all required files. However this means that an internet connection is required.
 
 Once a deployment has been run on various platforms (Windows, Linux and OSX), all dependencies should be downloaded and the entire folder can be shared without an internet connection required.
 
-**Usage**
+## Usage
 
-Create an environment yaml file in the repository, or modify ```environment.yml.example``` and rename to ```environment.yml```.
+At the basic level you can use this project to just setup Conda and experiment with the root environment. Just execute the following command:
+
+```
+```
+
+Create an environment file pointer in the repository, or modify ```environment.conf.example``` and rename to ```environment.yml```.
 
 The environment file follows this syntax;
 
@@ -25,7 +38,7 @@ dependencies:
 
 *Window* - You start the deployment by double-clicking the ```startup.bat``` on Windows, or running the ```startup.bat``` file in a terminal.
 
-*Linux* - You start the deployment by executing this in a terminal; ```sh path/to/repository/startup.sh```.
+*Linux* - You start the deployment by executing this in a terminal; ```source path/to/repository/startup.sh```.
 
 *OSX* - Coming soon.
 
