@@ -75,6 +75,8 @@ def main():
     if utils.get_arguments()["update"]:
         for repo in repositories:
             if "setup.py" in os.listdir(repo["path"]):
+                args = ["python", "setup.py", "build"]
+                subprocess.call(args, cwd=repo["path"])
                 args = ["python", "setup.py", "develop"]
                 subprocess.call(args, cwd=repo["path"])
 
@@ -107,6 +109,7 @@ def main():
     for repo in repositories:
         if "commands" in repo.keys():
             for cmd in repo["commands"]:
+                os.environ.update(utils.read_environment())
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
                 print "Executing: " + cmd
                 subprocess.call(cmd, shell=True, cwd=repo["path"])

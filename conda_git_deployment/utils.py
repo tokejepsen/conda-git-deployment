@@ -2,6 +2,7 @@ import os
 import imp
 import subprocess
 import argparse
+import tempfile
 
 
 def check_executable(executable):
@@ -56,26 +57,25 @@ def ensure_yaml():
         subprocess.call(["conda", "install", "yaml", "-y"])
 
 
-def read_yaml(yaml_data):
+def read_yaml(yaml_file):
 
     ensure_yaml()
-
     import yaml
 
-    if os.path.isfile(yaml_data):
-        with open(yaml_data, "r") as stream:
+    if os.path.isfile(yaml_file):
+        with open(yaml_file, "r") as stream:
                 return yaml.load(stream)
 
-    if isinstance(yaml_data, str) or isinstance(yaml_data, unicode):
-        return yaml.load(yaml_data)
+    if isinstance(yaml_file, str) or isinstance(yaml_file, unicode):
+        return yaml.load(yaml_file)
 
 
-def write_yaml(data, file_path):
+def write_yaml(data, yaml_file):
 
     ensure_yaml()
     import yaml
 
-    f = open(file_path, "w")
+    f = open(yaml_file, "w")
     try:
         yaml.dump(data, f, default_flow_style=False)
     finally:
@@ -97,3 +97,24 @@ def get_arguments():
     results = vars(args)
     results["unknown"] = unknown
     return results
+
+
+def write_environment(dictionary):
+
+    yaml_file = os.path.join(
+        tempfile.gettempdir(), "conda_git_deployment.yml"
+    )
+
+    write_yaml(dictionary, yaml_file)
+
+
+def read_environment():
+
+    yaml_file = os.path.join(
+        tempfile.gettempdir(), "conda_git_deployment.yml"
+    )
+
+    if os.path.exists(yaml_file):
+        return read_yaml(yaml_file)
+    else:
+        return {}
