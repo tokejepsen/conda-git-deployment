@@ -20,6 +20,7 @@ def main():
     os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
 
     repositories = []
+    cloned_repos = []
     for item in conf["dependencies"]:
         if "git" in item:
             for repo in item["git"]:
@@ -37,6 +38,7 @@ def main():
                     name = repo_path.split("/")[-2]
                 if "@" in name:
                     name = name.split("@")[0]
+                    repo_path = repo_path.split("@")[0]
                 data["name"] = name
 
                 if not os.path.exists(repositories_path):
@@ -45,6 +47,7 @@ def main():
                 if name not in os.listdir(repositories_path):
                     subprocess.call(["git", "clone", repo_path],
                                     cwd=repositories_path)
+                    cloned_repos.append(os.path.join(repositories_path, name))
                 data["path"] = os.path.join(repositories_path, name)
 
                 if isinstance(repo, dict):
@@ -67,11 +70,10 @@ def main():
         if "@" in repo["url"]:
             tag = repo["url"].split("@")[1]
             if tag:
+                print repo["name"]
                 subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
-    # Install any setup.py
-    # Query if a "build" directory is present to determine whether a repository
-    # has been installed.
+    # Install any setup.py if we are updating
     if utils.get_arguments()["update"]:
         for repo in repositories:
             if "setup.py" in os.listdir(repo["path"]):
@@ -79,6 +81,14 @@ def main():
                 subprocess.call(args, cwd=repo["path"])
                 args = ["python", "setup.py", "develop"]
                 subprocess.call(args, cwd=repo["path"])
+
+    # Install any setup.py if its a fresh cloned repo
+    for repo in cloned_repos:
+        if "setup.py" in os.listdir(repo):
+            args = ["python", "setup.py", "build"]
+            subprocess.call(args, cwd=repo)
+            args = ["python", "setup.py", "develop"]
+            subprocess.call(args, cwd=repo)
 
     # Add environment site packages to os.environ
     path = os.path.join(os.environ["CONDA_PREFIX"], "lib", "site-packages")
