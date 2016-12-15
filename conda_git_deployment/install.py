@@ -59,6 +59,14 @@ def main():
     if utils.get_arguments()["update"]:
         for repo in repositories:
             print repo["name"]
+
+            # Updating origin url
+            subprocess.call(
+                ["git", "remote", "set-url", "origin",
+                 repo["url"].split("@")[0]], cwd=repo["path"]
+            )
+
+            # Update git repository
             subprocess.call(["git", "pull"], cwd=repo["path"])
             subprocess.call(["git", "submodule", "update", "--init",
                              "--recursive"], cwd=repo["path"])
