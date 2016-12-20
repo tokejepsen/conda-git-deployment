@@ -7,6 +7,10 @@ import utils
 
 def main():
 
+    # Install git
+    if not utils.check_executable("git"):
+        subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
+
     conf = utils.read_yaml(utils.get_arguments()["unknown"][0])
     os.remove(utils.get_arguments()["unknown"][0])
 
