@@ -106,6 +106,7 @@ def write_environment(env):
     )
 
     # Setting environment.
+    output_data = {}
     for variable in env:
         path = ""
         for item in env[variable]:
@@ -117,7 +118,9 @@ def write_environment(env):
         except:
             os.environ[variable] = path[1:]
 
-    write_yaml(os.environ, yaml_file)
+        output_data[variable] = os.environ[variable]
+
+    write_yaml(output_data, yaml_file)
 
 
 def read_environment():
