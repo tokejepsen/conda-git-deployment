@@ -10,9 +10,9 @@ IF EXIST %~dp0windows\miniconda GOTO INSTALLEXISTS
 :INSTALLEXISTS
 
 set np=%~dp0windows\miniconda\Lib\site-packages;%~dp0windows\miniconda\Lib\site-packages\conda_env
-echo %pythonpath%|find /i "%np%">nul  || set pythonpath=%pythonpath%;%np%
+echo %pythonpath%|find /i "%np%">nul  || set pythonpath=%np%;%pythonpath%
 
 set np=%~dp0windows\miniconda;%~dp0windows\miniconda\Library\bin;%~dp0windows\miniconda\Scripts
-echo %path%|find /i "%np%">nul  || set path=%path%;%np%
+echo %path%|find /i "%np%">nul  || set path=%np%;%path%
 
 python %~dp0conda_git_deployment\update.py %*

@@ -71,6 +71,7 @@ def main():
             )
 
             # Update git repository
+            subprocess.call(["git", "checkout", "master"], cwd=repo["path"])
             subprocess.call(["git", "pull"], cwd=repo["path"])
             subprocess.call(["git", "submodule", "update", "--init",
                              "--recursive"], cwd=repo["path"])
@@ -108,7 +109,7 @@ def main():
 
     # Add sys.path to os.environ["PYTHONPATH"], because conda only modifies
     # sys.path which gets lost when launching any detached subprocesses.
-    # This get a little complicated due to be in the a process that hasn't
+    # This get a little complicated due to being in a process that hasn't
     # picked up on the changes, hence going through a subprocess.
     python_file = os.path.join(os.path.dirname(__file__), "write_sys_path.py")
     data_file = os.path.join(

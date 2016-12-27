@@ -99,13 +99,25 @@ def get_arguments():
     return results
 
 
-def write_environment(dictionary):
+def write_environment(env):
 
     yaml_file = os.path.join(
         tempfile.gettempdir(), "conda_git_deployment.yml"
     )
 
-    write_yaml(dictionary, yaml_file)
+    # Setting environment.
+    for variable in env:
+        path = ""
+        for item in env[variable]:
+            if item not in os.environ.get(variable, "").split(os.pathsep):
+                path += os.pathsep + item
+
+        try:
+            os.environ[variable] += path
+        except:
+            os.environ[variable] = path[1:]
+
+    write_yaml(os.environ, yaml_file)
 
 
 def read_environment():
