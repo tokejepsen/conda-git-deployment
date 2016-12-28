@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import tempfile
 
@@ -109,7 +110,7 @@ def main():
 
     # Add sys.path to os.environ["PYTHONPATH"], because conda only modifies
     # sys.path which gets lost when launching any detached subprocesses.
-    # This get a little complicated due to being in a process that hasn't
+    # This get a little complicated due to being in a process that hasn"t
     # picked up on the changes, hence going through a subprocess.
     python_file = os.path.join(os.path.dirname(__file__), "write_sys_path.py")
     data_file = os.path.join(
@@ -128,6 +129,19 @@ def main():
         if path.endswith(".egg"):
             os.environ["PYTHONPATH"] += os.pathsep + path
 
+    # Clean up any existing environment file
+    if os.path.exists(utils.get_environment_path()):
+        os.remove(utils.get_environment_path())
+
+    # Ensure subprocess is detached so closing connect will not also
+    # close launched applications.
+    options = {}
+    if not utils.get_arguments()["attached"]:
+        if sys.platform == "win32":
+            options["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        else:
+            options["preexec_fn"] = os.setsid
+
     # Execute start commands.
     for repo in repositories:
         if "commands" in repo.keys():
@@ -135,7 +149,7 @@ def main():
                 os.environ.update(utils.read_environment())
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
                 print "Executing: " + cmd
-                subprocess.call(cmd, shell=True, cwd=repo["path"])
+                subprocess.call(cmd, shell=True, cwd=repo["path"], **options)
 
 
 if __name__ == "__main__":

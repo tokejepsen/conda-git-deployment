@@ -86,12 +86,15 @@ def get_arguments():
 
     parser = argparse.ArgumentParser(description="conda-git-deployment")
 
-    parser.add_argument('--update', action="store_true", default=False,
+    parser.add_argument("--update", action="store_true", default=False,
                         dest="update",
                         help="Rebuild and updates an environment.")
-    parser.add_argument('--environment', action="store", default="",
+    parser.add_argument("--environment", action="store", default="",
                         dest="environment",
                         help="Environment to process.")
+    parser.add_argument("--attached", action="store_true", default=False,
+                        dest="attached",
+                        help="Spawn non-detached processes.")
 
     args, unknown = parser.parse_known_args()
     results = vars(args)
@@ -99,11 +102,16 @@ def get_arguments():
     return results
 
 
-def write_environment(env):
+def get_environment_path():
 
-    yaml_file = os.path.join(
+    return os.path.join(
         tempfile.gettempdir(), "conda_git_deployment.yml"
     )
+
+
+def write_environment(env):
+
+    yaml_file = get_environment_path()
 
     # Setting environment.
     output_data = {}
@@ -125,9 +133,7 @@ def write_environment(env):
 
 def read_environment():
 
-    yaml_file = os.path.join(
-        tempfile.gettempdir(), "conda_git_deployment.yml"
-    )
+    yaml_file = get_environment_path()
 
     if os.path.exists(yaml_file):
         return read_yaml(yaml_file)
