@@ -106,6 +106,7 @@ def main():
             if "git" in item:
                 env_conf["dependencies"].remove(item)
 
+        git_data["git"].reverse()
         env_conf["dependencies"].append(git_data)
         utils.write_yaml(
             env_conf, os.path.join(os.getcwd(), "environment.yml")
