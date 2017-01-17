@@ -57,6 +57,63 @@ def main():
     if not env_conf:
         env_conf = utils.read_yaml(requests.get(environment).text)
 
+    # Export environment
+    if utils.get_arguments()["export"]:
+        repositories_path = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "repositories",
+                env_conf["name"]
+            )
+        )
+
+        git_data = {"git": []}
+        for repo in os.listdir(repositories_path):
+
+            commit_hash = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"],
+                cwd=os.path.join(repositories_path, repo)
+            ).rsplit()[0]
+
+            url = subprocess.check_output(
+                ["git", "remote", "get-url", "origin"],
+                cwd=os.path.join(repositories_path, repo)
+            ).rsplit()[0]
+
+            for item in env_conf["dependencies"]:
+                if "git" in item:
+
+                    for origin_repo in item["git"]:
+
+                        origin_repo_url = ""
+                        if isinstance(origin_repo, str):
+                            origin_repo_url = origin_repo
+                        if isinstance(origin_repo, dict):
+                            origin_repo_url = origin_repo.keys()[0]
+
+                        if url == origin_repo_url.split("@")[0]:
+                            current_commit_url = url + "@" + commit_hash
+                            if isinstance(origin_repo, str):
+                                git_data["git"].append(current_commit_url)
+                            if isinstance(origin_repo, dict):
+                                value = origin_repo[origin_repo_url]
+                                git_data["git"].append({
+                                    current_commit_url: value
+                                })
+
+        for item in env_conf["dependencies"]:
+            if "git" in item:
+                env_conf["dependencies"].remove(item)
+
+        env_conf["dependencies"].append(git_data)
+        utils.write_yaml(
+            env_conf, os.path.join(os.getcwd(), "environment.yml")
+        )
+
+        return
+
+    # Writing original environment to disk
     data_file = os.path.join(
         tempfile.gettempdir(), 'data_%s.yml' % os.getpid()
     )

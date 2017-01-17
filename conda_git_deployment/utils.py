@@ -86,15 +86,34 @@ def get_arguments():
 
     parser = argparse.ArgumentParser(description="conda-git-deployment")
 
-    parser.add_argument("--update", action="store_true", default=False,
-                        dest="update",
-                        help="Rebuild and updates an environment.")
-    parser.add_argument("--environment", action="store", default="",
-                        dest="environment",
-                        help="Environment to process.")
-    parser.add_argument("--attached", action="store_true", default=False,
-                        dest="attached",
-                        help="Spawn non-detached processes.")
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        default=False,
+        dest="update",
+        help="Rebuild and updates an environment."
+    )
+    parser.add_argument(
+        "--environment",
+        action="store",
+        default="",
+        dest="environment",
+        help="Environment to process."
+    )
+    parser.add_argument(
+        "--attached",
+        action="store_true",
+        default=False,
+        dest="attached",
+        help="Spawn non-detached processes."
+    )
+    parser.add_argument(
+        "--export",
+        action="store_true",
+        default=False,
+        dest="export",
+        help="Exports the current environment into the working directory."
+    )
 
     args, unknown = parser.parse_known_args()
     results = vars(args)
