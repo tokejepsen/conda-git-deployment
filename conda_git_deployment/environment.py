@@ -93,7 +93,9 @@ def main():
                             origin_repo_url = origin_repo.keys()[0]
 
                         if url == origin_repo_url.split("@")[0]:
-                            current_commit_url = url + "@" + commit_hash
+                            current_commit_url = url
+                            if not utils.get_arguments()["no-commit"]:
+                                current_commit_url += "@" + commit_hash
                             if isinstance(origin_repo, str):
                                 git_data["git"].append(current_commit_url)
                             if isinstance(origin_repo, dict):

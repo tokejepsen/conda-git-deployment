@@ -114,6 +114,13 @@ def get_arguments():
         dest="export",
         help="Exports the current environment into the working directory."
     )
+    parser.add_argument(
+        "--no-commit",
+        action="store_true",
+        default=False,
+        dest="no-commit",
+        help="Setting for export, to not include commit id."
+    )
 
     args, unknown = parser.parse_known_args()
     results = vars(args)
