@@ -68,7 +68,8 @@ def main():
             )
         )
 
-        git_data = {"git": []}
+        # Get commit hash and name from repositories on disk.
+        disk_repos = {}
         for repo in os.listdir(repositories_path):
 
             commit_hash = subprocess.check_output(
@@ -76,40 +77,45 @@ def main():
                 cwd=os.path.join(repositories_path, repo)
             ).rsplit()[0]
 
-            url = subprocess.check_output(
-                ["git", "remote", "get-url", "origin"],
-                cwd=os.path.join(repositories_path, repo)
-            ).rsplit()[0]
+            disk_repos[repo] = commit_hash
 
-            for item in env_conf["dependencies"]:
-                if "git" in item:
+        # Construct new git dependencies.
+        git_data = {"git": []}
+        for item in env_conf["dependencies"]:
+            if "git" in item:
+                for repo in item["git"]:
 
-                    for origin_repo in item["git"]:
+                    # Get url from enviroment file.
+                    url = ""
+                    if isinstance(repo, str):
+                        url = repo
+                    if isinstance(repo, dict):
+                        url = repo.keys()[0]
 
-                        origin_repo_url = ""
-                        if isinstance(origin_repo, str):
-                            origin_repo_url = origin_repo
-                        if isinstance(origin_repo, dict):
-                            origin_repo_url = origin_repo.keys()[0]
+                    # Skip any repositories that aren't cloned yet.
+                    name = url.split("/")[-1].replace(".git", "").split("@")[0]
+                    if name not in disk_repos.keys():
+                        continue
 
-                        if url == origin_repo_url.split("@")[0]:
-                            current_commit_url = url
-                            if not utils.get_arguments()["no-commit"]:
-                                current_commit_url += "@" + commit_hash
-                            if isinstance(origin_repo, str):
-                                git_data["git"].append(current_commit_url)
-                            if isinstance(origin_repo, dict):
-                                value = origin_repo[origin_repo_url]
-                                git_data["git"].append({
-                                    current_commit_url: value
-                                })
+                    # Construct commit url if requested.
+                    commit_url = url.split("@")[0]
+                    if not utils.get_arguments()["no-commit"]:
+                        commit_url += "@" + disk_repos[name]
 
+                    if isinstance(repo, str):
+                        git_data["git"].append(commit_url)
+
+                    if isinstance(repo, dict):
+                        git_data["git"].append({commit_url: repo[url]})
+
+        # Replace git dependencies
         for item in env_conf["dependencies"]:
             if "git" in item:
                 env_conf["dependencies"].remove(item)
 
-        git_data["git"].reverse()
         env_conf["dependencies"].append(git_data)
+
+        # Write environment file
         utils.write_yaml(
             env_conf, os.path.join(os.getcwd(), "environment.yml")
         )
