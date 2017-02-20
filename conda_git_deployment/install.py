@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import tempfile
+import platform
 
 import utils
 
@@ -105,7 +106,13 @@ def main():
             subprocess.call(args, cwd=repo)
 
     # Add environment site packages to os.environ
-    path = os.path.join(os.environ["CONDA_PREFIX"], "lib", "site-packages")
+    prefix = ""
+    if platform.system().lower() == "windows":
+        prefix = os.environ["CONDA_PREFIX"]
+    else:
+        prefix = os.environ["CONDA_ENV_PATH"]
+
+    path = os.path.join(prefix, "lib", "site-packages")
     os.environ["PYTHONPATH"] += os.pathsep + path
 
     # Add sys.path to os.environ["PYTHONPATH"], because conda only modifies

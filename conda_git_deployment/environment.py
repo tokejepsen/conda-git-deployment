@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 import requests
 import sys
+import platform
 
 
 import utils
@@ -153,7 +154,11 @@ def main():
 
     # Spawning a new process to get the correct python executable and
     # passing data via file on disk.
-    args = [os.path.join(os.path.dirname(__file__), "environment.bat"),
+    platform_script = "environment.sh"
+    if platform.system().lower() == "windows":
+        platform_script = "environment.bat"
+
+    args = [os.path.join(os.path.dirname(__file__), platform_script),
             env_conf["name"],
             os.path.join(os.path.dirname(__file__), "install.py"),
             data_file]
@@ -163,6 +168,9 @@ def main():
     # If its the first installation, we need to pass update to install.py
     if not return_code:
         args.append("--update")
+
+    if platform.system().lower() != "windows":
+        args.insert(0, "bash")
 
     subprocess.call(args)
 
