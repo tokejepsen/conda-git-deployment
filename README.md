@@ -25,7 +25,7 @@ At the basic level you can use this project to just setup Conda and experiment w
 ```
 ```
 
-Create an environment file pointer in the repository, or modify ```environment.conf.example``` and rename to ```environment.yml```.
+Create an environment file pointer in the repository, or modify ```environment.conf.example``` and rename to ```environment.conf```.
 
 The environment file follows this syntax;
 
