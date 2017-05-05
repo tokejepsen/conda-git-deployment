@@ -59,7 +59,8 @@ def main():
         env_conf = utils.read_yaml(requests.get(environment).text)
 
     # Export environment
-    if utils.get_arguments()["export"]:
+    if (utils.get_arguments()["export"] or
+       utils.get_arguments()["export-without-commit"]):
         repositories_path = os.path.abspath(
             os.path.join(
                 os.path.dirname(__file__),
@@ -70,6 +71,8 @@ def main():
         )
 
         # Get commit hash and name from repositories on disk.
+        if not utils.check_executable("git"):
+            subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
         disk_repos = {}
         for repo in os.listdir(repositories_path):
 
@@ -100,7 +103,7 @@ def main():
 
                     # Construct commit url if requested.
                     commit_url = url.split("@")[0]
-                    if not utils.get_arguments()["no-commit"]:
+                    if not utils.get_arguments()["export-without-commit"]:
                         commit_url += "@" + disk_repos[name]
 
                     if isinstance(repo, str):
@@ -144,7 +147,7 @@ def main():
     utils.write_yaml(env_conf, filename)
 
     args = ["conda", "env", "create"]
-    if utils.get_arguments()["update"]:
+    if utils.get_arguments()["update-environment"]:
         args.append("--force")
     args.extend(["-f", filename])
 
@@ -167,7 +170,8 @@ def main():
 
     # If its the first installation, we need to pass update to install.py
     if not return_code:
-        args.append("--update")
+        args.append("--update-environment")
+        args.append("--update-repositories")
 
     if platform.system().lower() != "windows":
         args.insert(0, "bash")

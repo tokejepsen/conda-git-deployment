@@ -62,7 +62,7 @@ def main():
                 repositories.append(data)
 
     # Update repositories.
-    if utils.get_arguments()["update"]:
+    if utils.get_arguments()["update-repositories"]:
         for repo in repositories:
             print repo["name"]
 
@@ -89,7 +89,7 @@ def main():
                 subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
     # Install any setup.py if we are updating
-    if utils.get_arguments()["update"]:
+    if utils.get_arguments()["update-repositories"]:
         for repo in repositories:
             if "setup.py" in os.listdir(repo["path"]):
                 args = ["python", "setup.py", "build"]

@@ -19,7 +19,8 @@ def main():
 
 if __name__ == "__main__":
 
-    if utils.get_arguments()["update"]:
+    if (utils.get_arguments()["update-environment"] or
+       utils.get_arguments()["update-repositories"]):
         main()
 
     # Execute install

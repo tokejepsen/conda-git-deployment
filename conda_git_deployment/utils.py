@@ -87,11 +87,18 @@ def get_arguments():
     parser = argparse.ArgumentParser(description="conda-git-deployment")
 
     parser.add_argument(
-        "--update",
+        "--update-environment",
         action="store_true",
         default=False,
-        dest="update",
-        help="Rebuild and updates an environment."
+        dest="update-environment",
+        help="Update and rebuild environment."
+    )
+    parser.add_argument(
+        "--update-repositories",
+        action="store_true",
+        default=False,
+        dest="update-repositories",
+        help="Update and rebuild repositories."
     )
     parser.add_argument(
         "--environment",
@@ -112,14 +119,14 @@ def get_arguments():
         action="store_true",
         default=False,
         dest="export",
-        help="Exports the current environment into the working directory."
+        help="Exports the environment."
     )
     parser.add_argument(
-        "--no-commit",
+        "--export-without-commit",
         action="store_true",
         default=False,
-        dest="no-commit",
-        help="Setting for export, to not include commit id."
+        dest="export-without-commit",
+        help="Exports the environment, without commit ids."
     )
 
     args, unknown = parser.parse_known_args()
