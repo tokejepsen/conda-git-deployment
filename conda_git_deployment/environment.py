@@ -45,6 +45,18 @@ def main():
 
         return
 
+    # If requested to put user into the root environment.
+    if environment == "root":
+
+        msg = "You are in the root environment of Conda. "
+        msg += "The \"conda\" command is available to use now."
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        path = path.replace("\\", "/")
+
+        print msg.format(path=path)
+
+        return
+
     # Get environment data.
     env_conf = None
     if os.path.exists(environment):
