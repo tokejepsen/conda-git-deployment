@@ -87,20 +87,6 @@ def get_arguments():
     parser = argparse.ArgumentParser(description="conda-git-deployment")
 
     parser.add_argument(
-        "--update-environment",
-        action="store_true",
-        default=False,
-        dest="update-environment",
-        help="Update and rebuild environment."
-    )
-    parser.add_argument(
-        "--update-repositories",
-        action="store_true",
-        default=False,
-        dest="update-repositories",
-        help="Update and rebuild repositories."
-    )
-    parser.add_argument(
         "--environment",
         action="store",
         default="",
@@ -113,6 +99,20 @@ def get_arguments():
         default=False,
         dest="attached",
         help="Spawn non-detached processes."
+    )
+    parser.add_argument(
+        "--update-environment",
+        action="store_true",
+        default=False,
+        dest="update-environment",
+        help="Update and rebuild environment."
+    )
+    parser.add_argument(
+        "--update-repositories",
+        action="store_true",
+        default=False,
+        dest="update-repositories",
+        help="Update and rebuild repositories."
     )
     parser.add_argument(
         "--export",
