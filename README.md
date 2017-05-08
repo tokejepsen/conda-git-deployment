@@ -52,6 +52,3 @@ Once the environment has been built in a location on disk, if you move the folde
 This batch script updates both the environment and the repositories. The same as the following
 
 ```startup.bat --update-environment --update-repositories```
-
-- update-repositories.bat
-- update-environment.bat
