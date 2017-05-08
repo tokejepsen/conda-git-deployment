@@ -43,7 +43,7 @@ export-without-commit | Exports the environment, without commit ids. | ```startu
 
 Once the environment has been built in a location on disk, if you move the folder to a different location on disk, you will have to rebuild the environment.
 
-***NOTE: UNC paths are supported currently.***
+***NOTE: UNC paths are not supported currently.***
 
 ## Utilities
 
