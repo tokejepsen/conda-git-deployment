@@ -8,13 +8,13 @@ To simplify deploying git based repositories.
 
 In order to accurately mirror an environment with git repositories, this project has to take on some responsibilities;
 
-- Git Cloning/Updating.
-- Environment.
-- Command Execution.
+- Git cloning/updating.
+- Environment handling.
+- Command execution.
 
 ## Dependencies
 
-This package does not have any dependenies on external packages or modules. It downloads all required files. However this means that an internet connection is required.
+This package does not have any dependencies on external packages or modules. It downloads all required files. However this means that an internet connection is required.
 
 Once a deployment has been run on various platforms (Windows, Linux and OSX), all dependencies should be downloaded and the entire folder can be shared without an internet connection required.
 
@@ -23,25 +23,35 @@ Once a deployment has been run on various platforms (Windows, Linux and OSX), al
 At the basic level you can use this project to just setup Conda and experiment with the root environment. Just execute the following command:
 
 ```
+startup.bat --environment root
 ```
 
-Create an environment file pointer in the repository, or modify ```environment.conf.example``` and rename to ```environment.conf```.
+### Arguments
 
-The environment file follows this syntax;
+To facilitate different uses the ```startup``` executables has a number of arguments.
 
-```yaml
-dependencies:
-   - git:
-     - "https://github.com/tokejepsen/conda-git-example.git":
-        - "python $REPO_PATH/startup.py"
-```
+Argument | Description | Example
+--- | --- | ---
+environment | Environment file to process. | ```startup.bat --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
+attached | Spawn non-detached processes. | ```startup.bat --attached --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
+update-environment | Update and rebuild environment. | ```startup.bat --update-environment --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
+update-repositories | Update and rebuild repositories. | ```startup.bat --update-repositories --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
+export | Exports the environment. | ```startup.bat --export --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
+export-without-commit | Exports the environment, without commit ids. | ```startup.bat --export-without-commit --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 
-*Window* - You start the deployment by double-clicking the ```startup.bat``` on Windows, or running the ```startup.bat``` file in a terminal.
+## Location
 
-*Linux* - You start the deployment by executing this in a terminal; ```source path/to/repository/startup.sh```.
+Once the environment has been built in a location on disk, if you move the folder to a different location on disk, you will have to rebuild the environment.
 
-*OSX* - Coming soon.
+***NOTE: UNC paths are supported currently.***
 
-Using the example above will download the ```https://github.com/tokejepsen/conda-git-example.git``` repository, and execute the ```startup.py``` file inside. ```startup.py``` is dependent on PySide being installed, so it installs PySide with conda and displays a "Hello World" PySide window.
+## Utilities
 
-You can add git repositories (remote or local), which will be cloned and updated when ever the deployment is started.
+**update.bat**
+
+This batch script updates both the environment and the repositories. The same as the following
+
+```startup.bat --update-environment --update-repositories```
+
+- update-repositories.bat
+- update-environment.bat
