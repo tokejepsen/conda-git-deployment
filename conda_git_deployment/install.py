@@ -3,6 +3,7 @@ import sys
 import subprocess
 import tempfile
 import platform
+from difflib import SequenceMatcher
 
 import utils
 
@@ -87,6 +88,23 @@ def main():
             if tag:
                 print repo["name"]
                 subprocess.call(["git", "checkout", tag], cwd=repo["path"])
+
+    # Checkout environment repository
+    env = utils.get_arguments()["environment"]
+    if not os.path.exists(env):
+        # Determine environment repositories by matching passed environment
+        # with repositories
+        environment_repo = None
+        match = 0.0
+        for repo in repositories:
+            if match < SequenceMatcher(None, repo["url"], env).ratio():
+                environment_repo = repo
+
+        print environment_repo["name"]
+        branch = env.split("/")[-2]
+        subprocess.call(
+            ["git", "checkout", branch], cwd=environment_repo["path"]
+        )
 
     # Install any setup.py if we are updating
     if utils.get_arguments()["update-repositories"]:
