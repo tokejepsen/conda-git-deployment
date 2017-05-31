@@ -23,6 +23,17 @@ if __name__ == "__main__":
        utils.get_arguments()["update-repositories"]):
         main()
 
+    # Setting update mode environment variable
+    update_modes = []
+    if utils.get_arguments()["update-environment"]:
+        update_modes.append("environment")
+    if utils.get_arguments()["update-repositories"]:
+        update_modes.append("repositories")
+
+    os.environ["CONDA_GIT_UPDATE"] = ""
+    for mode in update_modes:
+        os.environ["CONDA_GIT_UPDATE"] += mode + os.pathsep
+
     # Execute install
     args = [
         "python", os.path.join(os.path.dirname(__file__), "environment.py")
