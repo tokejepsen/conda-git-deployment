@@ -167,6 +167,17 @@ def main():
         else:
             options["preexec_fn"] = os.setsid
 
+    # Setting update mode environment variable
+    update_modes = []
+    if utils.get_arguments()["update-environment"]:
+        update_modes.append("environment")
+    if utils.get_arguments()["update-repositories"]:
+        update_modes.append("repositories")
+
+    os.environ["CONDA_GIT_UPDATE"] = ""
+    for mode in update_modes:
+        os.environ["CONDA_GIT_UPDATE"] += mode + os.pathsep
+
     # Execute start commands.
     for repo in repositories:
         if "commands" in repo.keys():
