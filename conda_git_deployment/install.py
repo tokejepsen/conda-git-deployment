@@ -24,6 +24,9 @@ def main():
         )
     )
 
+    os.environ["CONDA_ENVIRONMENT_REPOSITORIES"] = repositories_path
+
+    # Kept for backwards compatibility
     os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
 
     repositories = []
