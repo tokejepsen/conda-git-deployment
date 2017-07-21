@@ -2,7 +2,7 @@
 
 ## Goal
 
-To simplify deploying git based repositories.
+Simplify deploying git based repositories.
 
 ## Responsibilities
 
