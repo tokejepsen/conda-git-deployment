@@ -7,14 +7,16 @@ import shutil
 import utils
 
 
-def main():
-
-    # Install git if its not available
-    if not utils.check_executable("git"):
-        subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
+def update():
 
     # Update conda-git-deployment
     print "conda-git-deployment"
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    subprocess.call(["git", "pull"], cwd=path)
+
+
+def initialise_git():
+
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
     repo_url = "https://github.com/tokejepsen/conda-git-deployment.git"
@@ -36,14 +38,20 @@ def main():
             print "Making conda-git-deployment into git repository failed."
             shutil.rmtree(tempdir)
 
-    subprocess.call(["git", "pull"], cwd=path)
-
 
 if __name__ == "__main__":
 
+    # Install git if its not available
+    if not utils.check_executable("git"):
+        subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
+
+    # Git initialise
+    initialise_git()
+
+    # Git update
     if (utils.get_arguments()["update-environment"] or
        utils.get_arguments()["update-repositories"]):
-        main()
+        update()
 
     # Execute install
     args = [
