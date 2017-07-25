@@ -33,7 +33,7 @@ This package is about deploying git repositories, so let's try with the example 
 
 ```
 $ cd /path/to/conda-git-deployment
-$ startup --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml
+$ startup --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml --attached
 ```
 
 The conda-git-example environment downloads itself and executes the ```environment.py``` file inside the repository with a separate environment specific python executable.
