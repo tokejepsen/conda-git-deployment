@@ -180,7 +180,7 @@ def main():
         "Local",
         "Continuum",
         "Miniconda2",
-        "environment.md5"
+        environment_data["name"] + ".md5"
     )
     if os.path.exists(md5_path):
         f = open(md5_path, "r")
