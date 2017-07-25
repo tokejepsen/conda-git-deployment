@@ -10,9 +10,9 @@ SET "URL=https://repo.continuum.io/miniconda/Miniconda2-latest-Windows-x86_64.ex
 powershell "Import-Module BitsTransfer; Start-BitsTransfer '%URL%' '%FILENAME%'"
 :INSTALLEREXISTS
 
-:: Install miniconda if the directory "windows\miniconda" does not exist.
+:: Install miniconda if the directory "%~dp0installers\miniconda" does not exist.
 IF EXIST %UserProfile%\AppData\Local\Continuum\Miniconda2 GOTO INSTALLEXISTS
-%~dp0windows\miniconda.exe /RegisterPython=0 /AddToPath=0 /S
+%~dp0installers\miniconda.exe /RegisterPython=0 /AddToPath=0 /S
 :INSTALLEXISTS
 
 :: Set minimum PYTHONPATH for conda to function.
