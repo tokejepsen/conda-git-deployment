@@ -84,7 +84,9 @@ def main():
 
         # Get commit hash and name from repositories on disk.
         if not utils.check_executable("git"):
-            subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
+            subprocess.call(
+                ["conda", "install", "-c", "anaconda", "git", "-y"]
+            )
         disk_repos = {}
         for repo in os.listdir(repositories_path):
 
