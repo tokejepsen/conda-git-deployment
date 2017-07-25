@@ -12,7 +12,7 @@ powershell "Import-Module BitsTransfer; Start-BitsTransfer '%URL%' '%FILENAME%'"
 
 :: Install miniconda if the directory "%~dp0installers\miniconda" does not exist.
 IF EXIST %UserProfile%\AppData\Local\Continuum\Miniconda2 GOTO INSTALLEXISTS
-%~dp0installers\miniconda.exe /RegisterPython=0 /AddToPath=0 /S
+%~dp0installers\miniconda.exe /RegisterPython=0 /AddToPath=0 /S /D=%UserProfile%\AppData\Local\Continuum\Miniconda2
 :INSTALLEXISTS
 
 :: Set minimum PYTHONPATH for conda to function.
