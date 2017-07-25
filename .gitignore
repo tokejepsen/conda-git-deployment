@@ -1,6 +1,4 @@
 *.pyc
-windows/*
-linux/*
-osx/*
 repositories/*
+installers/*
 environment.conf

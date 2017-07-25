@@ -4,6 +4,7 @@ import tempfile
 import requests
 import sys
 import platform
+import hashlib
 
 
 import utils
@@ -16,19 +17,20 @@ def main():
     os.environ["PYTHONPATH"] += os.pathsep + path
 
     # Get environment path
-    path = os.path.abspath(
+    environment_path = ""
+
+    configuration_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", "environment.conf")
     )
-    environment = None
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            environment = f.read().rstrip()
+    if os.path.exists(configuration_path):
+        with open(configuration_path, "r") as f:
+            environment_path = f.read().rstrip()
 
     if utils.get_arguments()["environment"]:
-        environment = utils.get_arguments()["environment"]
+        environment_path = utils.get_arguments()["environment"]
 
     # If no environment is defined, put user in root environment.
-    if not environment:
+    if not environment_path:
 
         msg = "\n\nCould not find the \"environment.conf\" file in \"{path}\"."
         msg += "\nPlease create an environment pointer file and save it as "
@@ -46,7 +48,7 @@ def main():
         return
 
     # If requested to put user into the root environment.
-    if environment == "root":
+    if environment_path == "root":
 
         msg = "You are in the root environment of Conda. "
         msg += "The \"conda\" command is available to use now."
@@ -58,17 +60,19 @@ def main():
         return
 
     # Get environment data.
-    env_conf = None
-    if os.path.exists(environment):
-        f = open(environment, "r")
-        env_conf = utils.read_yaml(f.read())
+    environment_string = ""
+    if os.path.exists(environment_path):
+        f = open(environment_path, "r")
+        environment_string = f.read()
         f.close()
     else:
         msg = "Could not find \"{0}\" on disk."
-        print msg.format(environment)
+        print msg.format(environment_path)
 
-    if not env_conf:
-        env_conf = utils.read_yaml(requests.get(environment).text)
+    if not environment_string:
+        environment_string = requests.get(environment_path).text
+
+    environment_data = utils.read_yaml(environment_string)
 
     # Export environment
     if (utils.get_arguments()["export"] or
@@ -78,7 +82,7 @@ def main():
                 os.path.dirname(__file__),
                 "..",
                 "repositories",
-                env_conf["name"]
+                environment_data["name"]
             )
         )
 
@@ -99,7 +103,7 @@ def main():
 
         # Construct new git dependencies.
         git_data = {"git": []}
-        for item in env_conf["dependencies"]:
+        for item in environment_data["dependencies"]:
             if "git" in item:
                 for repo in item["git"]:
 
@@ -127,15 +131,15 @@ def main():
                         git_data["git"].append({commit_url: repo[url]})
 
         # Replace git dependencies
-        for item in env_conf["dependencies"]:
+        for item in environment_data["dependencies"]:
             if "git" in item:
-                env_conf["dependencies"].remove(item)
+                environment_data["dependencies"].remove(item)
 
-        env_conf["dependencies"].append(git_data)
+        environment_data["dependencies"].append(git_data)
 
         # Write environment file
         utils.write_yaml(
-            env_conf, os.path.join(os.getcwd(), "environment.yml")
+            environment_data, os.path.join(os.getcwd(), "environment.yml")
         )
 
         return
@@ -144,30 +148,57 @@ def main():
     data_file = os.path.join(
         tempfile.gettempdir(), 'data_%s.yml' % os.getpid()
     )
-    utils.write_yaml(env_conf, data_file)
+    utils.write_yaml(environment_data, data_file)
 
-    # Create environment.
     # Remove git from environment as its not supported by conda (yet).
-    for item in env_conf["dependencies"]:
+    for item in environment_data["dependencies"]:
         if "git" in item:
-            index = env_conf["dependencies"].index(item)
-            del env_conf["dependencies"][index]
+            index = environment_data["dependencies"].index(item)
+            del environment_data["dependencies"][index]
 
     # Create environment file from passed environment.
-    filename = os.path.join(
+    environment_filename = os.path.join(
         tempfile.gettempdir(), 'env_%s.yml' % os.getpid()
     )
 
-    utils.write_yaml(env_conf, filename)
+    utils.write_yaml(environment_data, environment_filename)
 
     args = ["conda", "env", "create"]
+
+    # Force environment update/rebuild when requested by command.
     if utils.get_arguments()["update-environment"]:
         args.append("--force")
-    args.extend(["-f", filename])
+
+    # Check whether the environment installed is different from the requested
+    # environment. Force environment update/rebuild if different.
+    incoming_md5 = hashlib.md5(environment_string).hexdigest()
+    existing_md5 = ""
+
+    md5_path = os.path.join(
+        os.path.expanduser("~"),
+        "AppData",
+        "Local",
+        "Continuum",
+        "Miniconda2",
+        "environment.md5"
+    )
+    if os.path.exists(md5_path):
+        f = open(md5_path, "r")
+        existing_md5 = f.read()
+        f.close()
+
+    if incoming_md5 != existing_md5 and "--force" not in args:
+        args.append("--force")
+
+    with open(md5_path, "w") as the_file:
+        the_file.write(incoming_md5)
+
+    # Create environment
+    args.extend(["-f", environment_filename])
 
     return_code = subprocess.call(args)
 
-    os.remove(filename)
+    os.remove(environment_filename)
 
     # Spawning a new process to get the correct python executable and
     # passing data via file on disk.
@@ -176,7 +207,7 @@ def main():
         platform_script = "environment.bat"
 
     args = [os.path.join(os.path.dirname(__file__), platform_script),
-            env_conf["name"],
+            environment_data["name"],
             os.path.join(os.path.dirname(__file__), "install.py"),
             data_file]
 
