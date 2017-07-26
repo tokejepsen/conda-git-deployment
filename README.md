@@ -113,12 +113,6 @@ export | Exports the environment. | ```startup --export --environment https://ra
 export-without-commit | Exports the environment, without commit ids. | ```startup --export-without-commit --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 suppress-environment-update | If there are changes to the environment, this flag will suppress the environment update. | ```startup --suppress-environment-update --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 
-## Location
-
-Once the environment has been built in a location on disk, if you move the folder to a different location on disk, you will have to rebuild the environment.
-
-***NOTE: UNC paths are not supported currently.***
-
 ## Utilities
 
 **update.bat**
