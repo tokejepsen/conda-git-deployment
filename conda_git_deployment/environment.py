@@ -161,27 +161,28 @@ def main():
 
     # Check whether the environment installed is different from the requested
     # environment. Force environment update/rebuild if different.
-    incoming_md5 = hashlib.md5(environment_string).hexdigest()
-    existing_md5 = ""
+    if not utils.get_arguments()["suppress-environment-update"]:
+        incoming_md5 = hashlib.md5(environment_string).hexdigest()
+        existing_md5 = ""
 
-    md5_path = os.path.join(
-        os.path.expanduser("~"),
-        "AppData",
-        "Local",
-        "Continuum",
-        "Miniconda2",
-        environment_data["name"] + ".md5"
-    )
-    if os.path.exists(md5_path):
-        f = open(md5_path, "r")
-        existing_md5 = f.read()
-        f.close()
+        md5_path = os.path.join(
+            os.path.expanduser("~"),
+            "AppData",
+            "Local",
+            "Continuum",
+            "Miniconda2",
+            environment_data["name"] + ".md5"
+        )
+        if os.path.exists(md5_path):
+            f = open(md5_path, "r")
+            existing_md5 = f.read()
+            f.close()
 
-    if incoming_md5 != existing_md5 and "--force" not in args:
-        args.append("--force")
+        if incoming_md5 != existing_md5 and "--force" not in args:
+            args.append("--force")
 
-    with open(md5_path, "w") as the_file:
-        the_file.write(incoming_md5)
+        with open(md5_path, "w") as the_file:
+            the_file.write(incoming_md5)
 
     # Create environment
     args.extend(["-f", environment_filename])
