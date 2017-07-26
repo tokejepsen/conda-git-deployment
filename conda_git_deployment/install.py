@@ -106,7 +106,8 @@ def main():
         )
 
     # Install any setup.py if we are updating
-    if utils.get_arguments()["update-repositories"]:
+    if (utils.get_arguments()["update-repositories"] or
+       utils.get_arguments()["update-environment"]):
         for repo in repositories:
             if "setup.py" in os.listdir(repo["path"]):
                 args = ["python", "setup.py", "build"]

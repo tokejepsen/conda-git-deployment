@@ -216,7 +216,6 @@ def main():
     # If its the first installation, we need to pass update to install.py
     if not return_code:
         args.append("--update-environment")
-        args.append("--update-repositories")
 
     if platform.system().lower() != "windows":
         args.insert(0, "bash")
