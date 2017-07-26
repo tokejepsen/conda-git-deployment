@@ -111,6 +111,7 @@ update-environment | Update and rebuild environment. | ```startup --update-envir
 update-repositories | Update and rebuild repositories. | ```startup --update-repositories --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 export | Exports the environment. | ```startup --export --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 export-without-commit | Exports the environment, without commit ids. | ```startup --export-without-commit --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
+suppress-environment-update | If there are changes to the environment, this flag will suppress the environment update. | ```startup --suppress-environment-update --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 
 ## Location
 

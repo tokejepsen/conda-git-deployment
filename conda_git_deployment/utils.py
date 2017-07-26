@@ -146,6 +146,14 @@ def get_arguments():
         dest="export-without-commit",
         help="Exports the environment, without commit ids."
     )
+    parser.add_argument(
+        "--suppress-environment-update",
+        action="store_true",
+        default=False,
+        dest="suppress-environment-update",
+        help="If there are changes to the environment, this flag will suppress"
+        " the environment update."
+    )
 
     args, unknown = parser.parse_known_args()
     results = vars(args)
