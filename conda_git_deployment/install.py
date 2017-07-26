@@ -89,18 +89,21 @@ def main():
                 subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
     # Checkout environment repository
-    env = utils.get_arguments()["environment"]
-    if not os.path.exists(env):
+    environment_path = utils.get_environment()
+    if not os.path.exists(environment_path):
         # Determine environment repositories by matching passed environment
         # with repositories
         environment_repo = None
         match = 0.0
         for repo in repositories:
-            if match < SequenceMatcher(None, repo["url"], env).ratio():
+            sequence_match = SequenceMatcher(
+                None, repo["url"], environment_path
+            ).ratio()
+            if match < sequence_match:
                 environment_repo = repo
 
         print environment_repo["name"]
-        branch = env.split("/")[-2]
+        branch = environment_path.split("/")[-2]
         subprocess.call(
             ["git", "checkout", branch], cwd=environment_repo["path"]
         )

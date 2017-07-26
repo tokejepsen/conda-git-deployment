@@ -17,17 +17,7 @@ def main():
     os.environ["PYTHONPATH"] += os.pathsep + path
 
     # Get environment path
-    environment_path = ""
-
-    configuration_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "environment.conf")
-    )
-    if os.path.exists(configuration_path):
-        with open(configuration_path, "r") as f:
-            environment_path = f.read().rstrip()
-
-    if utils.get_arguments()["environment"]:
-        environment_path = utils.get_arguments()["environment"]
+    environment_path = utils.get_environment()
 
     # If no environment is defined, put user in root environment.
     if not environment_path:
