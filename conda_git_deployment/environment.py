@@ -83,10 +83,12 @@ def main():
             )
         disk_repos = {}
         for repo in os.listdir(repositories_path):
+            path = os.path.join(repositories_path, repo)
+            if not os.path.exists(os.path.join(path, ".git")):
+                continue
 
             commit_hash = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"],
-                cwd=os.path.join(repositories_path, repo)
+                ["git", "rev-parse", "HEAD"], cwd=path
             ).rsplit()[0]
 
             disk_repos[repo] = commit_hash
