@@ -69,6 +69,19 @@ dependencies:
 
 This will just create the environment and clone the conda-git-example repository.
 
+You can also take over the installation process yourself by defining the commands to execute on updating the environment:
+```yaml
+name: conda-git-example
+dependencies:
+- python=2.7
+- git:
+  - https://github.com/tokejepsen/conda-git-example.git:
+    - on_environment_update:
+      - python -c "print \"Building the repository myself.\""
+    - python $REPO_PATH/environment.py
+```
+
+
 ### Environment variables
 
 Through the deployment process a number of environment variables are set, to facilitate access across processes.

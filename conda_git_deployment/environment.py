@@ -163,6 +163,7 @@ def main():
 
     # Check whether the environment installed is different from the requested
     # environment. Force environment update/rebuild if different.
+    environment_update = False
     if not utils.get_arguments()["suppress-environment-update"]:
         incoming_md5 = hashlib.md5(environment_string).hexdigest()
         existing_md5 = ""
@@ -180,8 +181,10 @@ def main():
             existing_md5 = f.read()
             f.close()
 
-        if incoming_md5 != existing_md5 and "--force" not in args:
-            args.append("--force")
+        if incoming_md5 != existing_md5:
+            environment_update = True
+            if "--force" not in args:
+                args.append("--force")
 
         with open(md5_path, "w") as the_file:
             the_file.write(incoming_md5)
@@ -212,6 +215,9 @@ def main():
 
     if platform.system().lower() != "windows":
         args.insert(0, "bash")
+
+    if environment_update and "--update-environment" not in args:
+        args.append("--update-environment")
 
     subprocess.call(args)
 

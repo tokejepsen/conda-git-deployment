@@ -56,8 +56,16 @@ def main():
                     cloned_repos.append(os.path.join(repositories_path, name))
                 data["path"] = os.path.join(repositories_path, name)
 
+                data["commands"] = {
+                    "on_launch": [], "on_environment_update": []
+                }
                 if isinstance(repo, dict):
-                    data["commands"] = repo[repo.keys()[0]]
+                    for item in repo[repo_path]:
+                        if isinstance(item, dict):
+                            for event, commands in item.iteritems():
+                                data["commands"][event].extend(commands)
+                        else:
+                            data["commands"]["on_launch"].append(item)
 
                 repositories.append(data)
 
@@ -183,10 +191,22 @@ def main():
     for mode in update_modes:
         os.environ["CONDA_GIT_UPDATE"] += mode + os.pathsep
 
-    # Execute start commands.
+    # Execute environment update commands.
+    if utils.get_arguments()["update-environment"]:
+        for repo in repositories:
+            if "commands" in repo.keys():
+                for cmd in repo["commands"]["on_environment_update"]:
+                    os.environ.update(utils.read_environment())
+                    cmd = cmd.replace("$REPO_PATH", repo["path"])
+                    print "Executing: " + cmd
+                    subprocess.call(
+                        cmd, shell=True, cwd=repo["path"], **options
+                    )
+
+    # Execute launch commands.
     for repo in repositories:
         if "commands" in repo.keys():
-            for cmd in repo["commands"]:
+            for cmd in repo["commands"]["on_launch"]:
                 os.environ.update(utils.read_environment())
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
                 print "Executing: " + cmd
