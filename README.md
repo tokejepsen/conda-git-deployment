@@ -102,15 +102,16 @@ This is a variable that shows what updating mode, the deployment is in. Availabl
 
 Mode | Description
 --- | ---
-"" | No updating
-"update-repositories" | Updating the repositories
-"update-environment" | Updating the environment
+"repositories" | Updating the repositories
+"environment" | Updating the environment
 
 The update modes can be combined, in which case they are split by the OS's path separator.
 
 ```python
 print os.environ["CONDA_GIT_UPDATE"].split(os.sep)
 ```
+
+**NOTE: If no updating is happening, the environment variable will not be available.**
 
 ### Arguments
 
