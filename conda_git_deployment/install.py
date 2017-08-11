@@ -60,7 +60,7 @@ def main():
                     "on_launch": [], "on_environment_update": []
                 }
                 if isinstance(repo, dict):
-                    for item in repo[repo_path]:
+                    for item in repo[repo.keys()[0]]:
                         if isinstance(item, dict):
                             for event, commands in item.iteritems():
                                 data["commands"][event].extend(commands)
