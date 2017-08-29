@@ -1,5 +1,7 @@
 # conda-git-deployment
 
+**NOTE: Linux/OSX is not supported yet.**
+
 ## Goal
 
 Simplify deploying git based repositories.
