@@ -12,10 +12,6 @@ import utils
 
 def main():
 
-    # Add conda_git_deployment module to environment.
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    os.environ["PYTHONPATH"] += os.pathsep + path
-
     # Get environment path
     environment_path = utils.get_environment()
 
@@ -48,6 +44,11 @@ def main():
         print msg.format(path=path)
 
         return
+
+    # Add conda_git_deployment module to environment.
+    # Also removing PYTHONPATH that conda root environment needs.
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    os.environ["PYTHONPATH"] = path
 
     # Get environment data.
     environment_string = ""

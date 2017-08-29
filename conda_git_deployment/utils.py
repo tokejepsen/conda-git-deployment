@@ -72,7 +72,7 @@ def check_module(module_name):
 def ensure_yaml():
 
     if not check_module("yaml"):
-        subprocess.call(["conda", "install", "yaml", "-y"])
+        subprocess.call(["conda", "install", "pyyaml", "-y"])
 
 
 def read_yaml(yaml_file):
