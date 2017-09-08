@@ -26,7 +26,6 @@ def main():
     os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
 
     repositories = []
-    cloned_repos = []
     for item in conf["dependencies"]:
         if "git" in item:
             for repo in item["git"]:
@@ -53,7 +52,7 @@ def main():
                 if name not in os.listdir(repositories_path):
                     subprocess.call(["git", "clone", repo_path],
                                     cwd=repositories_path)
-                    cloned_repos.append(os.path.join(repositories_path, name))
+
                 data["path"] = os.path.join(repositories_path, name)
 
                 data["commands"] = {
@@ -90,7 +89,7 @@ def main():
 
     # Checkout any commits/tags if there are newly cloned repositories or
     # updating the repositories.
-    if cloned_repos or utils.get_arguments()["update-repositories"]:
+    if utils.get_arguments()["update-repositories"]:
         for repo in repositories:
             if "@" in repo["url"]:
                 tag = repo["url"].split("@")[1]
@@ -122,19 +121,11 @@ def main():
     if (utils.get_arguments()["update-repositories"] or
        utils.get_arguments()["update-environment"]):
         for repo in repositories:
-            if "setup.py" in os.listdir(repo["path"]):
-                args = ["python", "setup.py", "build"]
-                subprocess.call(args, cwd=repo["path"])
-                args = ["python", "setup.py", "develop"]
-                subprocess.call(args, cwd=repo["path"])
+            if "setup.py" not in os.listdir(repo["path"]):
+                continue
 
-    # Install any setup.py if its a fresh cloned repo
-    for repo in cloned_repos:
-        if "setup.py" in os.listdir(repo):
-            args = ["python", "setup.py", "build"]
-            subprocess.call(args, cwd=repo)
             args = ["python", "setup.py", "develop"]
-            subprocess.call(args, cwd=repo)
+            subprocess.call(args, cwd=repo["path"])
 
     # Add environment site packages to os.environ
     prefix = ""
