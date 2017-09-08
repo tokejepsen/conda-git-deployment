@@ -13,8 +13,8 @@ def main():
     conf = utils.read_yaml(utils.get_arguments()["unknown"][0])
     os.remove(utils.get_arguments()["unknown"][0])
 
-    # Clone repositories.
-    # Using os.getcwd() because the drive letter needs to be respected on Windows.
+    # Clone repositories. Using os.getcwd() because the drive letter needs to
+    # be respected on Windows.
     repositories_path = os.path.abspath(
         os.path.join(
             os.getcwd(), "repositories", conf["name"]
