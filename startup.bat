@@ -1,3 +1,7 @@
+:: Change the working directory to the conda-git-deployment directory.
+:: "pushd" is being used so any UNC paths get mapped until a restart happens.
+pushd %~dp0
+
 :: Isolating the execution environment.
 :: Powershell is needed for downloading miniconda.
 set PATH=C:\WINDOWS\System32\WindowsPowerShell\v1.0
