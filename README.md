@@ -83,6 +83,28 @@ dependencies:
     - python $REPO_PATH/environment.py
 ```
 
+### Execution Stages
+
+1. Conda installation.
+ - [Miniconda](https://conda.io/miniconda.html) get downloaded and installed.
+2. ```conda-git-deployment``` initialized.
+ - The ```conda-git-deployment``` directory gets turned into a git reposity.
+3. ```conda-git-deployment``` updated.
+ - ```conda-git-deployment``` gets updated to the latest version no matter what.
+4. Environment creation.
+ - A conda environment gets created either from a local or remote environment file.
+ - Any ```pip``` commands in the file gets executed on environment creation.
+5. Repositories cloning.
+ - All repositories in the environment file gets cloned local to the ```conda-git-deployment``` directory.
+6. Repositories updating.
+ - All repositories get updated to the latest commit.
+7. Repositories checkout.
+ - All repositories with a commit hash gets checked out to that commit hash.
+8. Repositories installation.
+ - Any repositories with a ```setup.py``` file gets installed in the development mode.
+9. Repositories command execution.
+ - All repositories command list gets executed.
+
 
 ### Environment variables
 
