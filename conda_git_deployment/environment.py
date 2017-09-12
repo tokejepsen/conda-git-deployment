@@ -163,10 +163,13 @@ def main():
         args.append("--force")
 
     # Check whether the environment installed is different from the requested
-    # environment. Force environment update/rebuild if different.
+    # environment, and whether the conda-git-deployment is different.
+    # Force environment update/rebuild if different.
     environment_update = False
     if not utils.get_arguments()["suppress-environment-update"]:
-        incoming_md5 = hashlib.md5(environment_string).hexdigest()
+        incoming_md5 = hashlib.md5(
+            environment_string + "cwd: {0}".format(os.getcwd())
+        ).hexdigest()
         existing_md5 = ""
 
         md5_path = os.path.join(
