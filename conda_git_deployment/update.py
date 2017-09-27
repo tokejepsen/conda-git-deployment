@@ -53,6 +53,32 @@ if __name__ == "__main__":
        utils.get_arguments()["update-repositories"]):
         update()
 
+    # Purging "[miniconda]\pkgs\.trash"
+    print "Purging trash..."
+    path = os.path.abspath(
+        os.path.join(sys.executable, "..", "pkgs", ".trash")
+    )
+    errors = []
+    for directory in os.listdir(path):
+        try:
+            shutil.rmtree(os.path.join(path, directory))
+        except Exception as e:
+            errors.append(e)
+
+    if errors:
+        if not utils.check_module("colorama"):
+            subprocess.call(
+                ["conda", "install", "-c", "anaconda", "colorama", "-y"]
+            )
+        from colorama import init, Fore, Style
+
+        init(convert=True)
+
+        print(Fore.RED + "Erros while purging trash:")
+        for error in errors:
+            print(Fore.RED + str(error))
+        print(Style.RESET_ALL)
+
     # Execute install
     args = [
         "python", os.path.join(os.path.dirname(__file__), "environment.py")
