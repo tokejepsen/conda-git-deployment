@@ -39,29 +39,19 @@ def initialise_git():
             shutil.rmtree(tempdir)
 
 
-if __name__ == "__main__":
+def purge_directories(root):
 
-    # Install git if its not available
-    if not utils.check_executable("git"):
-        subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
+    if not os.path.exists(root):
+        return
 
-    # Git initialise
-    initialise_git()
-
-    # Git update
-    if (utils.get_arguments()["update-environment"] or
-       utils.get_arguments()["update-repositories"]):
-        update()
-
-    # Purging "[miniconda]\pkgs\.trash"
-    print "Purging trash..."
-    path = os.path.abspath(
-        os.path.join(sys.executable, "..", "pkgs", ".trash")
-    )
     errors = []
-    for directory in os.listdir(path):
+    for directory in os.listdir(root):
+        path = os.path.join(root, directory)
+        if not os.path.isdir(path):
+            continue
+
         try:
-            shutil.rmtree(os.path.join(path, directory))
+            shutil.rmtree(path)
         except Exception as e:
             errors.append(e)
 
@@ -78,6 +68,34 @@ if __name__ == "__main__":
         for error in errors:
             print(Fore.RED + str(error))
         print(Style.RESET_ALL)
+
+
+if __name__ == "__main__":
+
+    # Install git if its not available
+    if not utils.check_executable("git"):
+        subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
+
+    # Git initialise
+    initialise_git()
+
+    # Git update
+    if (utils.get_arguments()["update-environment"] or
+       utils.get_arguments()["update-repositories"]):
+        update()
+
+    # Purge unused files
+    print "Purging trash..."
+    path = os.path.abspath(
+        os.path.join(sys.executable, "..", "pkgs", ".trash")
+    )
+    purge_directories(path)
+
+    print "Purging extracted packages..."
+    path = os.path.abspath(
+        os.path.join(sys.executable, "..", "pkgs")
+    )
+    purge_directories(path)
 
     # Execute install
     args = [
