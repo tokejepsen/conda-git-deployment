@@ -64,7 +64,7 @@ def purge_directories(root):
 
         init(convert=True)
 
-        print(Fore.RED + "Erros while purging trash:")
+        print(Fore.RED + "Erros while purging:")
         for error in errors:
             print(Fore.RED + str(error))
         print(Style.RESET_ALL)
