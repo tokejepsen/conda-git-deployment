@@ -91,12 +91,6 @@ if __name__ == "__main__":
     )
     purge_directories(path)
 
-    print "Purging extracted packages..."
-    path = os.path.abspath(
-        os.path.join(sys.executable, "..", "pkgs")
-    )
-    purge_directories(path)
-
     # Execute install
     args = [
         "python", os.path.join(os.path.dirname(__file__), "environment.py")
