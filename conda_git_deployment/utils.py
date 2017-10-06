@@ -3,6 +3,8 @@ import imp
 import subprocess
 import argparse
 import tempfile
+import requests
+import hashlib
 
 
 def get_environment():
@@ -21,6 +23,61 @@ def get_environment():
         environment_path = get_arguments()["environment"]
 
     return environment_path
+
+
+def get_environment_string():
+
+    environment_path = os.environ["CONDA_ENVIRONMENT_PATH"]
+    environment_string = ""
+    if os.path.exists(environment_path):
+        f = open(environment_path, "r")
+        environment_string = f.read()
+        f.close()
+    else:
+        msg = "Could not find \"{0}\" on disk."
+        print msg.format(environment_path)
+
+    if not environment_string:
+        environment_string = requests.get(environment_path).text
+
+    return environment_string
+
+
+def get_incoming_md5():
+    return hashlib.md5(
+        get_environment_string() + "cwd: {0}".format(
+            os.environ["CONDA_ENVIRONMENT_CWD"]
+        )
+    ).hexdigest()
+
+
+def get_md5_path():
+
+    return os.path.join(
+        os.path.expanduser("~"),
+        "AppData",
+        "Local",
+        "Continuum",
+        "Miniconda2",
+        os.environ["CONDA_ENVIRONMENT_NAME"] + ".md5"
+    )
+
+
+def updates_available():
+    incoming_md5 = get_incoming_md5()
+
+    existing_md5 = ""
+
+    md5_path = get_md5_path()
+    if os.path.exists(md5_path):
+        f = open(md5_path, "r")
+        existing_md5 = f.read()
+        f.close()
+
+    if incoming_md5 == existing_md5:
+        return False
+    else:
+        return True
 
 
 def check_executable(executable):

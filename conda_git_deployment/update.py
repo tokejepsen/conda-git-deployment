@@ -91,6 +91,9 @@ if __name__ == "__main__":
     )
     purge_directories(path)
 
+    os.environ["CONDA_ENVIRONMENT_PATH"] = utils.get_environment()
+    os.environ["CONDA_ENVIRONMENT_CWD"] = os.getcwd()
+
     # Execute install
     args = [
         "python", os.path.join(os.path.dirname(__file__), "environment.py")

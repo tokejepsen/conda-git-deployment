@@ -13,7 +13,7 @@ import utils
 def main():
 
     # Get environment path
-    environment_path = utils.get_environment()
+    environment_path = os.environ["CONDA_ENVIRONMENT_PATH"]
 
     # If no environment is defined, put user in root environment.
     if not environment_path:
@@ -51,19 +51,10 @@ def main():
     os.environ["PYTHONPATH"] = path
 
     # Get environment data.
-    environment_string = ""
-    if os.path.exists(environment_path):
-        f = open(environment_path, "r")
-        environment_string = f.read()
-        f.close()
-    else:
-        msg = "Could not find \"{0}\" on disk."
-        print msg.format(environment_path)
-
-    if not environment_string:
-        environment_string = requests.get(environment_path).text
-
+    environment_string = utils.get_environment_string()
     environment_data = utils.read_yaml(environment_string)
+
+    os.environ["CONDA_ENVIRONMENT_NAME"] = environment_data["name"]
 
     # Export environment
     if (utils.get_arguments()["export"] or
@@ -167,31 +158,14 @@ def main():
     # Force environment update/rebuild if different.
     environment_update = False
     if not utils.get_arguments()["suppress-environment-update"]:
-        incoming_md5 = hashlib.md5(
-            environment_string + "cwd: {0}".format(os.getcwd())
-        ).hexdigest()
-        existing_md5 = ""
 
-        md5_path = os.path.join(
-            os.path.expanduser("~"),
-            "AppData",
-            "Local",
-            "Continuum",
-            "Miniconda2",
-            environment_data["name"] + ".md5"
-        )
-        if os.path.exists(md5_path):
-            f = open(md5_path, "r")
-            existing_md5 = f.read()
-            f.close()
-
-        if incoming_md5 != existing_md5:
+        if utils.updates_available():
             environment_update = True
             if "--force" not in args:
                 args.append("--force")
 
-        with open(md5_path, "w") as the_file:
-            the_file.write(incoming_md5)
+        with open(utils.get_md5_path(), "w") as the_file:
+            the_file.write(utils.get_incoming_md5())
 
     # Create environment
     args.extend(["-f", environment_filename])
