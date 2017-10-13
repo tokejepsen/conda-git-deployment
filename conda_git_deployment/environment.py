@@ -1,10 +1,8 @@
 import os
 import subprocess
 import tempfile
-import requests
 import sys
 import platform
-import hashlib
 
 
 import utils
