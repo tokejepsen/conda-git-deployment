@@ -76,6 +76,9 @@ if __name__ == "__main__":
     if not utils.check_executable("git"):
         subprocess.call(["conda", "install", "-c", "anaconda", "git", "-y"])
 
+    # Configure git to checkout long file names.
+    subprocess.call(["git", "config", "--system", "core.longpaths", "true"])
+
     # Git initialise
     initialise_git()
 
