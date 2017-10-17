@@ -27,6 +27,7 @@ def main():
     os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
 
     repositories = []
+    cloned_repositories = False
     for item in conf["dependencies"]:
         if "git" in item:
             for repo in item["git"]:
@@ -53,6 +54,7 @@ def main():
                 if name not in os.listdir(repositories_path):
                     subprocess.call(["git", "clone", repo_path],
                                     cwd=repositories_path)
+                    cloned_repositories = True
 
                 data["path"] = os.path.join(repositories_path, name)
 
@@ -70,7 +72,7 @@ def main():
                 repositories.append(data)
 
     # Update repositories.
-    if utils.get_arguments()["update-repositories"]:
+    if utils.get_arguments()["update-repositories"] or cloned_repositories:
         for repo in repositories:
             print repo["name"]
 
@@ -90,7 +92,7 @@ def main():
 
     # Checkout any commits/tags if there are newly cloned repositories or
     # updating the repositories.
-    if utils.get_arguments()["update-repositories"]:
+    if utils.get_arguments()["update-repositories"] or cloned_repositories:
         for repo in repositories:
             if "@" in repo["url"]:
                 tag = repo["url"].split("@")[1]
