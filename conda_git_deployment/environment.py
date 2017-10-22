@@ -10,32 +10,26 @@ import utils
 
 def main():
 
-    # Get environment path
-    environment_path = os.environ["CONDA_ENVIRONMENT_PATH"]
-
     # If no environment is defined, put user in root environment.
-    if not environment_path:
+    # Or if requested to put user into the root environment.
+    if not utils.get_environment() or utils.get_environment() == "root":
 
-        msg = "\n\nCould not find the \"environment.conf\" file in \"{path}\"."
-        msg += "\nPlease create an environment pointer file and save it as "
-        msg += "\"{path}/environment.conf\"."
-        msg += "\nYou can also modify the included example "
-        msg += "\"{path}/environment.conf.example\", and rename to "
-        msg += "\"{path}/environment.conf\"."
-        msg += "\n\nYou are in the root environment of Conda. "
-        msg += "The \"conda\" command is available to use now."
-        path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        path = path.replace("\\", "/")
+        msg = ""
 
-        print msg.format(path=path)
+        if not utils.get_environment():
+            msg += (
+                "\n\nCould not find the \"environment.conf\" file in "
+                "\"{path}\".\nPlease create an environment pointer file and "
+                "save it as \"{path}/environment.conf\".\nYou can also modify "
+                "the included example \"{path}/environment.conf.example\", and"
+                " rename to \"{path}/environment.conf\"."
+            )
 
-        return
-
-    # If requested to put user into the root environment.
-    if environment_path == "root":
-
-        msg = "You are in the root environment of Conda. "
-        msg += "The \"conda\" command is available to use now."
+        msg += (
+            "\n\nYou are in the root environment of Conda. The \"conda\", "
+            "\"activate\" and \"deactivate\" command is ""available to use "
+            "now."
+        )
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         path = path.replace("\\", "/")
 
