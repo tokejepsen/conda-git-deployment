@@ -27,7 +27,10 @@ def get_environment():
 
 def get_environment_string():
 
-    environment_path = os.environ["CONDA_ENVIRONMENT_PATH"]
+    environment_path = os.path.join(
+        os.environ["CONDA_ENVIRONMENT_CWD"],
+        os.environ["CONDA_ENVIRONMENT_PATH"]
+    )
     environment_string = ""
     if os.path.exists(environment_path):
         f = open(environment_path, "r")
