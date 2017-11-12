@@ -33,7 +33,7 @@ def main():
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         path = path.replace("\\", "/")
 
-        print msg.format(path=path)
+        print(msg.format(path=path))
 
         return
 

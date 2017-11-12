@@ -35,7 +35,7 @@ def get_environment_string():
         f.close()
     else:
         msg = "Could not find \"{0}\" on disk."
-        print msg.format(environment_path)
+        print(msg.format(environment_path))
 
     if not environment_string:
         environment_string = requests.get(environment_path).text

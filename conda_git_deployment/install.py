@@ -74,7 +74,7 @@ def main():
     # Update repositories.
     if utils.get_arguments()["update-repositories"] or cloned_repositories:
         for repo in repositories:
-            print repo["name"]
+            print(repo["name"])
 
             # Updating origin url
             subprocess.call(
@@ -97,7 +97,7 @@ def main():
             if "@" in repo["url"]:
                 tag = repo["url"].split("@")[1]
                 if tag:
-                    print repo["name"]
+                    print(repo["name"])
                     subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
         # Checkout environment repository
@@ -114,7 +114,7 @@ def main():
                 if match < sequence_match:
                     environment_repo = repo
 
-            print environment_repo["name"]
+            print(environment_repo["name"])
             branch = environment_path.split("/")[-2]
             subprocess.call(
                 ["git", "checkout", branch], cwd=environment_repo["path"]
@@ -192,7 +192,7 @@ def main():
                 for cmd in repo["commands"]["on_environment_update"]:
                     os.environ.update(utils.read_environment())
                     cmd = cmd.replace("$REPO_PATH", repo["path"])
-                    print "Executing: " + cmd
+                    print("Executing: " + cmd)
                     subprocess.call(
                         cmd, shell=True, cwd=repo["path"], **options
                     )
@@ -203,7 +203,7 @@ def main():
             for cmd in repo["commands"]["on_launch"]:
                 os.environ.update(utils.read_environment())
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
-                print "Executing: " + cmd
+                print("Executing: " + cmd)
                 subprocess.call(cmd, shell=True, cwd=repo["path"], **options)
 
 

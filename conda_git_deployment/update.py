@@ -10,7 +10,7 @@ import utils
 def update():
 
     # Update conda-git-deployment
-    print "conda-git-deployment"
+    print("conda-git-deployment")
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     subprocess.call(["git", "pull"], cwd=path)
 
@@ -22,7 +22,7 @@ def initialise_git():
     repo_url = "https://github.com/tokejepsen/conda-git-deployment.git"
     if ".git" not in os.listdir(path):
         try:
-            print "Making conda-git-deployment into git repository."
+            print("Making conda-git-deployment into git repository.")
 
             # Copy .git directory from cloned repository
             tempdir = tempfile.mkdtemp()
@@ -35,7 +35,7 @@ def initialise_git():
             subprocess.call(["git", "init"], cwd=path)
             subprocess.call(["git", "add", "."], cwd=path)
         except:
-            print "Making conda-git-deployment into git repository failed."
+            print("Making conda-git-deployment into git repository failed.")
             shutil.rmtree(tempdir)
 
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         update()
 
     # Purge unused files
-    print "Purging trash..."
+    print("Purging trash...")
     path = os.path.abspath(
         os.path.join(sys.executable, "..", "pkgs", ".trash")
     )
