@@ -55,10 +55,7 @@ def get_md5_path():
 
     return os.path.join(
         os.path.expanduser("~"),
-        "AppData",
-        "Local",
-        "Continuum",
-        "Miniconda2",
+        "miniconda",
         os.environ["CONDA_ENVIRONMENT_NAME"] + ".md5"
     )
 
