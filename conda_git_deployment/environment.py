@@ -156,8 +156,9 @@ def main():
             if "--force" not in args:
                 args.append("--force")
 
-        with open(utils.get_md5_path(), "w") as the_file:
-            the_file.write(utils.get_incoming_md5())
+        if os.path.exists(os.path.dirname(utils.get_md5_path())):
+            with open(utils.get_md5_path(), "w") as the_file:
+                the_file.write(utils.get_incoming_md5())
 
     # Create environment
     args.extend(["-f", environment_filename])
