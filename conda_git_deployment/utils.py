@@ -39,9 +39,9 @@ def get_environment_string():
     else:
         msg = "Could not find \"{0}\" on disk."
         print(msg.format(environment_path))
-
-    if not environment_string:
-        environment_string = requests.get(environment_path).text
+        environment_string = requests.get(
+            os.environ["CONDA_ENVIRONMENT_PATH"]
+        ).text
 
     return environment_string
 
