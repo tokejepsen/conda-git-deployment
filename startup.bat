@@ -19,11 +19,9 @@ IF EXIST %UserProfile%\miniconda GOTO INSTALLEXISTS
 %~dp0installers\miniconda.exe /RegisterPython=0 /AddToPath=0 /S /D=%UserProfile%\miniconda
 :INSTALLEXISTS
 
-:: Set minimum PYTHONPATH for conda to function.
-set PYTHONPATH=%UserProfile%\miniconda\Lib\site-packages;%UserProfile%\miniconda\Lib\site-packages\conda_env
-
 :: Set minimum PATH for conda to function.
 :: PATH has to have "C:\Windows\System32" for conda to function properly. Specifically for "cmd" and "chcp" executables.
-set PATH=C:\Windows\System32;%UserProfile%\miniconda;%UserProfile%\miniconda\Library\bin;%UserProfile%\miniconda\Scripts
+set PATH=C:\Windows\System32;%UserProfile%\miniconda\Scripts
 
+call activate root
 python %~dp0conda_git_deployment\update.py %*
