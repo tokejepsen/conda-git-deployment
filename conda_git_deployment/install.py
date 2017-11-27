@@ -10,6 +10,125 @@ import utils
 
 def main():
 
+    # Export environment
+    if (utils.get_arguments()["export"] or
+       utils.get_arguments()["export-without-commit"]):
+        environment_string = utils.get_environment_string()
+        environment_data = utils.read_yaml(environment_string)
+
+        repositories_path = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "repositories",
+                environment_data["name"]
+            )
+        )
+
+        # Get commit hash and name from repositories on disk.
+        if not utils.check_executable("git"):
+            subprocess.call(
+                ["conda", "install", "-c", "anaconda", "git", "-y"]
+            )
+        disk_repos = {}
+        for repo in os.listdir(repositories_path):
+            path = os.path.join(repositories_path, repo)
+            if not os.path.exists(os.path.join(path, ".git")):
+                continue
+
+            commit_hash = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=path
+            ).rsplit()[0]
+
+            disk_repos[repo] = commit_hash
+
+        # Construct new git dependencies.
+        git_data = {"git": []}
+        for item in environment_data["dependencies"]:
+            if "git" in item:
+                for repo in item["git"]:
+
+                    # Get url from enviroment file.
+                    url = ""
+                    if isinstance(repo, str):
+                        url = repo
+                    if isinstance(repo, dict):
+                        url = repo.keys()[0]
+
+                    # Skip any repositories that aren't cloned yet.
+                    name = url.split("/")[-1].replace(".git", "").split("@")[0]
+                    if name not in disk_repos.keys():
+                        continue
+
+                    # Construct commit url if requested.
+                    commit_url = url.split("@")[0]
+                    if not utils.get_arguments()["export-without-commit"]:
+                        commit_url += "@" + disk_repos[name]
+
+                    if isinstance(repo, str):
+                        git_data["git"].append(commit_url)
+
+                    if isinstance(repo, dict):
+                        git_data["git"].append({commit_url: repo[url]})
+
+        # Replace git dependencies
+        for item in environment_data["dependencies"]:
+            if "git" in item:
+                environment_data["dependencies"].remove(item)
+
+        environment_data["dependencies"].append(git_data)
+
+        # Lock down conda and pip dependencies
+        locked_environment = utils.read_yaml(
+            subprocess.check_output(["conda", "env", "export"], cwd=path)
+        )
+
+        dependencies = {}
+        for dependency in environment_data["dependencies"]:
+            if isinstance(dependency, str):
+                dependencies[dependency.split("=")[0]] = ""
+            if isinstance(dependency, dict):
+                if "pip" not in dependency:
+                    continue
+                for pip_dependency in dependency["pip"]:
+                    dependencies[pip_dependency.split("=")[0]] = ""
+        print dependencies
+        for dependency in locked_environment["dependencies"]:
+            if isinstance(dependency, str):
+                name = dependency.split("=")[0]
+                if name in dependencies:
+                    dependencies[name] = dependency
+            if isinstance(dependency, dict):
+                if "pip" not in dependency:
+                    continue
+                for pip_dependency in dependency["pip"]:
+                    name = pip_dependency.split("=")[0]
+                    if name in dependencies:
+                        dependencies[name] = pip_dependency
+
+        for dependency in environment_data["dependencies"]:
+            index = environment_data["dependencies"].index(dependency)
+            if isinstance(dependency, str):
+                version = dependencies[dependency.split("=")[0]]
+                if version:
+                    environment_data["dependencies"][index] = version
+            if isinstance(dependency, dict):
+                if "pip" not in dependency:
+                    continue
+                for pip_dependency in dependency["pip"]:
+                    version = dependencies[pip_dependency.split("=")[0]]
+                    if version:
+                        pip_dict = environment_data["dependencies"][index]
+                        pip_index = pip_dict["pip"].index(pip_dependency)
+                        pip_dict["pip"][pip_index] = version
+
+        # Write environment file
+        utils.write_yaml(
+            environment_data, os.path.join(os.getcwd(), "environment.yml")
+        )
+
+        return
+
     conf = utils.read_yaml(utils.get_arguments()["unknown"][0])
     os.remove(utils.get_arguments()["unknown"][0])
 
