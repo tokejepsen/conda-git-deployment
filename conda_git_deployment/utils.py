@@ -3,7 +3,6 @@ import imp
 import subprocess
 import argparse
 import tempfile
-import requests
 import hashlib
 
 
@@ -39,6 +38,12 @@ def get_environment_string():
     else:
         msg = "Could not find \"{0}\" on disk."
         print(msg.format(environment_path))
+
+        if not check_module("requests"):
+            subprocess.call(["pip", "install", "requests"])
+
+        import requests
+
         environment_string = requests.get(
             os.environ["CONDA_ENVIRONMENT_PATH"]
         ).text
