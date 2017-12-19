@@ -2,3 +2,4 @@
 repositories/*
 installers/*
 environment.conf
+installation/*

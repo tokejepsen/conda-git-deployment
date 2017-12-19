@@ -14,14 +14,23 @@ SET "URL=https://repo.continuum.io/miniconda/Miniconda2-latest-Windows-x86_64.ex
 powershell "Import-Module BitsTransfer; Start-BitsTransfer '%URL%' '%FILENAME%'"
 :INSTALLEREXISTS
 
-:: Install miniconda if the directory "%UserProfile%\miniconda" does not exist.
-IF EXIST %UserProfile%\miniconda GOTO INSTALLEXISTS
-%~dp0installers\miniconda.exe /RegisterPython=0 /AddToPath=0 /S /D=%UserProfile%\miniconda
-:INSTALLEXISTS
+:: Get installation directory.
+set directory=%UserProfile%\miniconda
+
+set argc=0
+FOR %%A IN (%*) DO (
+    set /A argc+=1
+    IF "%%A"=="--repository-install" SET directory=%~dp0\installation\win
+)
+
+:: Install miniconda if the directory %directory% does not exist.
+IF EXIST %directory% GOTO INSTALLATIONEXISTS
+%~dp0installers\miniconda.exe /RegisterPython=0 /AddToPath=0 /S /D=%directory%
+:INSTALLATIONEXISTS
 
 :: Set minimum PATH for conda to function.
 :: PATH has to have "C:\Windows\System32" for conda to function properly. Specifically for "cmd" and "chcp" executables.
-set PATH=C:\Windows\System32;%UserProfile%\miniconda\Scripts
+set PATH=C:\Windows\System32;%directory%\Scripts
 
 call activate root
 python %~dp0conda_git_deployment\update.py %*
