@@ -10,6 +10,11 @@ import utils
 
 def main():
 
+    if not utils.check_executable("git"):
+        subprocess.call(
+            ["conda", "install", "-c", "anaconda", "git", "-y"]
+        )
+
     # Export environment
     if (utils.get_arguments()["export"] or
        utils.get_arguments()["export-without-commit"]):
@@ -26,10 +31,6 @@ def main():
         )
 
         # Get commit hash and name from repositories on disk.
-        if not utils.check_executable("git"):
-            subprocess.call(
-                ["conda", "install", "-c", "anaconda", "git", "-y"]
-            )
         disk_repos = {}
         for repo in os.listdir(repositories_path):
             path = os.path.join(repositories_path, repo)
