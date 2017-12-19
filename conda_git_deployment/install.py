@@ -92,7 +92,7 @@ def main():
                     continue
                 for pip_dependency in dependency["pip"]:
                     dependencies[pip_dependency.split("=")[0]] = ""
-        print dependencies
+
         for dependency in locked_environment["dependencies"]:
             if isinstance(dependency, str):
                 name = dependency.split("=")[0]
