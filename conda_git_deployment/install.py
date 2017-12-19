@@ -197,17 +197,19 @@ def main():
 
             # Updating origin url
             subprocess.call(
-                ["git", "remote", "set-url", "origin",
-                 repo["url"].split("@")[0]], cwd=repo["path"]
+                [
+                    "git",
+                    "remote",
+                    "set-url",
+                    "origin",
+                    repo["url"].split("@")[0]
+                ],
+                cwd=repo["path"]
             )
 
             # Update git repository
             subprocess.call(["git", "checkout", "master"], cwd=repo["path"])
             subprocess.call(["git", "pull"], cwd=repo["path"])
-            subprocess.call(["git", "submodule", "update", "--init",
-                             "--recursive"], cwd=repo["path"])
-            subprocess.call(["git", "submodule", "update", "--recursive"],
-                            cwd=repo["path"])
 
     # Checkout any commits/tags if there are newly cloned repositories or
     # updating the repositories.
