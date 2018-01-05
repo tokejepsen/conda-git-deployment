@@ -27,5 +27,8 @@ powershell "Import-Module BitsTransfer; Start-BitsTransfer '%URL%' '%FILENAME%'"
 :: PATH has to have "C:\Windows\System32" for conda to function properly. Specifically for "cmd" and "chcp" executables.
 set PATH=C:\Windows\System32;%directory%\Scripts
 
+:: Get additional arguments from configuration
+set /p additional_arguments=<%~dp0startup.conf
+
 call activate root
-python %~dp0conda_git_deployment\update.py %*
+python %~dp0conda_git_deployment\update.py %additional_arguments% %*
