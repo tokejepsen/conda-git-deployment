@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import platform
 from difflib import SequenceMatcher
+import zipfile
 
 import utils
 
@@ -127,6 +128,48 @@ def main():
         utils.write_yaml(
             environment_data, os.path.join(os.getcwd(), "environment.yml")
         )
+
+        # Export deployment
+        print("Building deployment...")
+        zip_file = zipfile.ZipFile("deployment.zip", "w", zipfile.ZIP_DEFLATED)
+
+        exclude_dirs = [
+            os.path.abspath(os.path.join(__file__, "..", "..", "installers")),
+            os.path.abspath(
+                os.path.join(__file__, "..", "..", "repositories")
+            ),
+        ]
+
+        exclude_files = [
+            os.path.abspath(
+                os.path.join(__file__, "..", "..", "deployment.zip")
+            ),
+            os.path.abspath(
+                os.path.join(__file__, "..", "..", "environment.yml")
+            )
+        ]
+
+        path = os.path.abspath(os.path.join(__file__, "..", ".."))
+        files_to_zip = []
+        for root, dirs, files in os.walk(path, topdown=True):
+            # Filter directories
+            valid_dirs = []
+            for d in dirs:
+                if os.path.join(root, d) not in exclude_dirs:
+                    valid_dirs.append(d)
+            dirs[:] = valid_dirs
+
+            for f in files:
+                # Filter files
+                if os.path.join(root, f) in exclude_files:
+                    continue
+                files_to_zip.append(os.path.join(root, f))
+
+        root = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+        for f in files_to_zip:
+            zip_file.write(f, os.path.relpath(f, root))
+
+        zip_file.close()
 
         return
 
