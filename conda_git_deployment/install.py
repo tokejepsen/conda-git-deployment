@@ -242,6 +242,24 @@ def main():
                 ["git", "checkout", branch], cwd=environment_repo["path"]
             )
 
+    # Symlink repositories into environments "site-packages"
+    symlink_directory = os.path.abspath(
+        os.path.join(
+            sys.executable, "..", "Lib", "site-packages", "repositories"
+        )
+    )
+
+    if not os.path.exists(symlink_directory):
+        os.makedirs(symlink_directory)
+
+    for repository in repositories:
+        path = os.path.join(symlink_directory, repository["name"])
+
+        if os.path.exists(path):
+            continue
+
+        utils.symlink_directory(repository["path"], path)
+
     # Install any setup.py if we are updating
     if (utils.get_arguments()["update-repositories"] or
        utils.get_arguments()["update-environment"]):
@@ -249,8 +267,10 @@ def main():
             if "setup.py" not in os.listdir(repo["path"]):
                 continue
 
-            args = ["python", "setup.py", "develop"]
-            subprocess.call(args, cwd=repo["path"])
+            subprocess.call(
+                ["python", "setup.py", "develop"],
+                cwd=os.path.join(symlink_directory, repo["name"])
+            )
 
     # Add environment site packages to os.environ
     prefix = ""

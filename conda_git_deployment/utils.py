@@ -24,6 +24,15 @@ def get_environment():
     return environment_path
 
 
+def symlink_directory(source, target):
+
+    if not check_module("ntfsutils"):
+        subprocess.call(["pip", "install", "ntfsutils"])
+
+    import ntfsutils.junction
+    ntfsutils.junction.create(source, target)
+
+
 def get_environment_string():
 
     environment_path = os.path.join(
