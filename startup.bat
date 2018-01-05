@@ -6,6 +6,12 @@ pushd %~dp0
 :: Powershell is needed for downloading miniconda.
 set PATH=C:\WINDOWS\System32\WindowsPowerShell\v1.0
 
+:: Get installation directory.
+set directory=%~dp0installation\win
+
+:: Install miniconda if the directory %directory% does not exist.
+IF EXIST %directory% GOTO INSTALLATIONEXISTS
+
 :: Create "installers" directory if it does not exist, and download miniconda into it.
 IF EXIST %~dp0installers\miniconda.exe GOTO INSTALLEREXISTS
 mkdir %~dp0installers
@@ -14,11 +20,6 @@ SET "URL=https://repo.continuum.io/miniconda/Miniconda2-latest-Windows-x86_64.ex
 powershell "Import-Module BitsTransfer; Start-BitsTransfer '%URL%' '%FILENAME%'"
 :INSTALLEREXISTS
 
-:: Get installation directory.
-set directory=%~dp0installation\win
-
-:: Install miniconda if the directory %directory% does not exist.
-IF EXIST %directory% GOTO INSTALLATIONEXISTS
 %~dp0installers\miniconda.exe /RegisterPython=0 /AddToPath=0 /S /D=%directory%
 :INSTALLATIONEXISTS
 
