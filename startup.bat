@@ -15,13 +15,7 @@ powershell "Import-Module BitsTransfer; Start-BitsTransfer '%URL%' '%FILENAME%'"
 :INSTALLEREXISTS
 
 :: Get installation directory.
-set directory=%UserProfile%\miniconda
-
-set argc=0
-FOR %%A IN (%*) DO (
-    set /A argc+=1
-    IF "%%A"=="--repository-install" SET directory=%~dp0\installation\win
-)
+set directory=%~dp0installation\win
 
 :: Install miniconda if the directory %directory% does not exist.
 IF EXIST %directory% GOTO INSTALLATIONEXISTS
