@@ -244,7 +244,7 @@ def write_environment(env):
 
         try:
             os.environ[variable] += path
-        except:
+        except KeyError:
             os.environ[variable] = path[1:]
 
         output_data[variable] = os.environ[variable]
