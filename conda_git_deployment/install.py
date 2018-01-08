@@ -16,11 +16,12 @@ def main():
             ["conda", "install", "-c", "anaconda", "git", "-y"]
         )
 
+    environment_string = utils.get_environment_string()
+    environment_data = utils.read_yaml(environment_string)
+
     # Export environment
     if (utils.get_arguments()["export"] or
        utils.get_arguments()["export-without-commit"]):
-        environment_string = utils.get_environment_string()
-        environment_data = utils.read_yaml(environment_string)
 
         repositories_path = os.path.abspath(
             os.path.join(
@@ -124,6 +125,10 @@ def main():
                         pip_index = pip_dict["pip"].index(pip_dependency)
                         pip_dict["pip"][pip_index] = version
 
+        return
+
+    if utils.get_arguments()["export-zip-environment"]:
+
         # Write environment file
         utils.write_yaml(
             environment_data, os.path.join(os.getcwd(), "environment.yml")
@@ -131,40 +136,18 @@ def main():
 
         # Export deployment
         print("Building deployment...")
-        zip_file = zipfile.ZipFile("deployment.zip", "w", zipfile.ZIP_DEFLATED)
+        zip_file = zipfile.ZipFile(
+            environment_data["name"] + ".zip", "w", zipfile.ZIP_DEFLATED
+        )
 
-        exclude_dirs = [
-            os.path.abspath(os.path.join(__file__, "..", "..", "installers"))
-        ]
-
-        exclude_files = [
-            os.path.abspath(
-                os.path.join(__file__, "..", "..", "deployment.zip")
-            ),
-            os.path.abspath(
-                os.path.join(__file__, "..", "..", "environment.yml")
-            )
-        ]
-
-        path = os.path.abspath(os.path.join(__file__, "..", ".."))
+        path = os.path.abspath(os.path.join(sys.executable, ".."))
         files_to_zip = []
         for root, dirs, files in os.walk(path, topdown=True):
-            # Filter directories
-            valid_dirs = []
-            for d in dirs:
-                if os.path.join(root, d) not in exclude_dirs:
-                    valid_dirs.append(d)
-            dirs[:] = valid_dirs
-
             for f in files:
-                # Filter files
-                if os.path.join(root, f) in exclude_files:
-                    continue
                 files_to_zip.append(os.path.join(root, f))
 
-        root = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
         for f in files_to_zip:
-            zip_file.write(f, os.path.relpath(f, root))
+            zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
 
         zip_file.close()
 

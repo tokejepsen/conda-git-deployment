@@ -209,7 +209,7 @@ def get_arguments():
         action="store_true",
         default=False,
         dest="export",
-        help="Exports the environment."
+        help="Exports the environment yaml file."
     )
     parser.add_argument(
         "--export-without-commit",
@@ -217,6 +217,13 @@ def get_arguments():
         default=False,
         dest="export-without-commit",
         help="Exports the environment, without commit ids."
+    )
+    parser.add_argument(
+        "--export-zip-environment",
+        action="store_true",
+        default=False,
+        dest="export-zip-environment",
+        help="Exports the environment files as zip."
     )
 
     args, unknown = parser.parse_known_args()
