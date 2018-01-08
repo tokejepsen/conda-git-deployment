@@ -7,7 +7,7 @@ pushd %~dp0
 set PATH=C:\WINDOWS\System32\WindowsPowerShell\v1.0
 
 :: Get installation directory.
-set directory=%~dp0installation\win
+set directory=%~dp0installation\windows
 
 :: Install miniconda if the directory %directory% does not exist.
 IF EXIST %directory% GOTO INSTALLATIONEXISTS

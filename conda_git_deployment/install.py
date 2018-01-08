@@ -82,7 +82,7 @@ def main():
 
         # Lock down conda and pip dependencies
         locked_environment = utils.read_yaml(
-            subprocess.check_output(["conda", "env", "export"], cwd=path)
+            subprocess.check_output(["conda", "env", "export"])
         )
 
         dependencies = {}
@@ -134,10 +134,7 @@ def main():
         zip_file = zipfile.ZipFile("deployment.zip", "w", zipfile.ZIP_DEFLATED)
 
         exclude_dirs = [
-            os.path.abspath(os.path.join(__file__, "..", "..", "installers")),
-            os.path.abspath(
-                os.path.join(__file__, "..", "..", "repositories")
-            ),
+            os.path.abspath(os.path.join(__file__, "..", "..", "installers"))
         ]
 
         exclude_files = [

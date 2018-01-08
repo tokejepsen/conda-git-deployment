@@ -74,19 +74,20 @@ def main():
         args.append("--force")
 
     # Check whether the environment installed is different from the requested
-    # environment, and whether the conda-git-deployment is different.
-    # Force environment update/rebuild if different.
+    # environment. Force environment update/rebuild if different.
     environment_update = False
-    if not utils.get_arguments()["suppress-environment-update"]:
 
-        if utils.updates_available():
-            environment_update = True
-            if "--force" not in args:
-                args.append("--force")
+    if utils.updates_available():
+        environment_update = True
+        if "--force" not in args:
+            args.append("--force")
 
-        if os.path.exists(os.path.dirname(utils.get_md5_path())):
-            with open(utils.get_md5_path(), "w") as the_file:
-                the_file.write(utils.get_incoming_md5())
+    path = utils.get_md5_path()
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+
+    with open(path, "w") as the_file:
+        the_file.write(utils.get_incoming_md5())
 
     # Create environment
     args.extend(["-f", environment_filename])

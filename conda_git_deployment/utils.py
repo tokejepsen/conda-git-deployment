@@ -61,19 +61,20 @@ def get_environment_string():
 
 
 def get_incoming_md5():
-    return hashlib.md5(
-        get_environment_string() + "cwd: {0}".format(
-            os.environ["CONDA_ENVIRONMENT_CWD"]
-        )
-    ).hexdigest()
+    return hashlib.md5(get_environment_string()).hexdigest()
 
 
 def get_md5_path():
 
-    return os.path.join(
-        os.path.expanduser("~"),
-        "miniconda",
-        os.environ["CONDA_ENVIRONMENT_NAME"] + ".md5"
+    return os.path.abspath(
+        os.path.join(
+            __file__,
+            "..",
+            "..",
+            "repositories",
+            os.environ["CONDA_ENVIRONMENT_NAME"],
+            os.environ["CONDA_ENVIRONMENT_NAME"] + ".md5"
+        )
     )
 
 
@@ -216,14 +217,6 @@ def get_arguments():
         default=False,
         dest="export-without-commit",
         help="Exports the environment, without commit ids."
-    )
-    parser.add_argument(
-        "--suppress-environment-update",
-        action="store_true",
-        default=False,
-        dest="suppress-environment-update",
-        help="If there are changes to the environment, this flag will suppress"
-        " the environment update."
     )
 
     args, unknown = parser.parse_known_args()
