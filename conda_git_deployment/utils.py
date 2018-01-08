@@ -45,9 +45,6 @@ def get_environment_string():
         environment_string = f.read()
         f.close()
     else:
-        msg = "Could not find \"{0}\" on disk."
-        print(msg.format(environment_path))
-
         if not check_module("requests"):
             subprocess.call(["pip", "install", "requests"])
 

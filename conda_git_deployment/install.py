@@ -9,169 +9,29 @@ import zipfile
 import utils
 
 
-def main():
-
-    if not utils.check_executable("git"):
-        subprocess.call(
-            ["conda", "install", "-c", "anaconda", "git", "-y"]
-        )
+def get_repositories_path():
 
     environment_string = utils.get_environment_string()
     environment_data = utils.read_yaml(environment_string)
 
-    # Export environment
-    if (utils.get_arguments()["export"] or
-       utils.get_arguments()["export-without-commit"]):
-
-        repositories_path = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "repositories",
-                environment_data["name"]
-            )
-        )
-
-        # Get commit hash and name from repositories on disk.
-        disk_repos = {}
-        for repo in os.listdir(repositories_path):
-            path = os.path.join(repositories_path, repo)
-            if not os.path.exists(os.path.join(path, ".git")):
-                continue
-
-            commit_hash = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], cwd=path
-            ).rsplit()[0]
-
-            disk_repos[repo] = commit_hash
-
-        # Construct new git dependencies.
-        git_data = {"git": []}
-        for item in environment_data["dependencies"]:
-            if "git" in item:
-                for repo in item["git"]:
-
-                    # Get url from enviroment file.
-                    url = ""
-                    if isinstance(repo, str):
-                        url = repo
-                    if isinstance(repo, dict):
-                        url = repo.keys()[0]
-
-                    # Skip any repositories that aren't cloned yet.
-                    name = url.split("/")[-1].replace(".git", "").split("@")[0]
-                    if name not in disk_repos.keys():
-                        continue
-
-                    # Construct commit url if requested.
-                    commit_url = url.split("@")[0]
-                    if not utils.get_arguments()["export-without-commit"]:
-                        commit_url += "@" + disk_repos[name]
-
-                    if isinstance(repo, str):
-                        git_data["git"].append(commit_url)
-
-                    if isinstance(repo, dict):
-                        git_data["git"].append({commit_url: repo[url]})
-
-        # Replace git dependencies
-        for item in environment_data["dependencies"]:
-            if "git" in item:
-                environment_data["dependencies"].remove(item)
-
-        environment_data["dependencies"].append(git_data)
-
-        # Lock down conda and pip dependencies
-        locked_environment = utils.read_yaml(
-            subprocess.check_output(["conda", "env", "export"])
-        )
-
-        dependencies = {}
-        for dependency in environment_data["dependencies"]:
-            if isinstance(dependency, str):
-                dependencies[dependency.split("=")[0]] = ""
-            if isinstance(dependency, dict):
-                if "pip" not in dependency:
-                    continue
-                for pip_dependency in dependency["pip"]:
-                    dependencies[pip_dependency.split("=")[0]] = ""
-
-        for dependency in locked_environment["dependencies"]:
-            if isinstance(dependency, str):
-                name = dependency.split("=")[0]
-                if name in dependencies:
-                    dependencies[name] = dependency
-            if isinstance(dependency, dict):
-                if "pip" not in dependency:
-                    continue
-                for pip_dependency in dependency["pip"]:
-                    name = pip_dependency.split("=")[0]
-                    if name in dependencies:
-                        dependencies[name] = pip_dependency
-
-        for dependency in environment_data["dependencies"]:
-            index = environment_data["dependencies"].index(dependency)
-            if isinstance(dependency, str):
-                version = dependencies[dependency.split("=")[0]]
-                if version:
-                    environment_data["dependencies"][index] = version
-            if isinstance(dependency, dict):
-                if "pip" not in dependency:
-                    continue
-                for pip_dependency in dependency["pip"]:
-                    version = dependencies[pip_dependency.split("=")[0]]
-                    if version:
-                        pip_dict = environment_data["dependencies"][index]
-                        pip_index = pip_dict["pip"].index(pip_dependency)
-                        pip_dict["pip"][pip_index] = version
-
-        return
-
-    if utils.get_arguments()["export-zip-environment"]:
-
-        # Write environment file
-        utils.write_yaml(
-            environment_data, os.path.join(os.getcwd(), "environment.yml")
-        )
-
-        # Export deployment
-        print("Building deployment...")
-        zip_file = zipfile.ZipFile(
-            environment_data["name"] + ".zip", "w", zipfile.ZIP_DEFLATED
-        )
-
-        path = os.path.abspath(os.path.join(sys.executable, ".."))
-        files_to_zip = []
-        for root, dirs, files in os.walk(path, topdown=True):
-            for f in files:
-                files_to_zip.append(os.path.join(root, f))
-
-        for f in files_to_zip:
-            zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
-
-        zip_file.close()
-
-        return
-
-    conf = utils.read_yaml(utils.get_arguments()["unknown"][0])
-    os.remove(utils.get_arguments()["unknown"][0])
-
     # Clone repositories. Using os.getcwd() because the drive letter needs to
     # be respected on Windows.
-    repositories_path = os.path.abspath(
+    return os.path.abspath(
         os.path.join(
-            os.getcwd(), "repositories", conf["name"]
+            os.getcwd(), "repositories", environment_data["name"]
         )
     )
 
-    os.environ["CONDA_ENVIRONMENT_REPOSITORIES"] = repositories_path
 
-    # Kept for backwards compatibility
-    os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
+def get_repositories_data():
+    environment_string = utils.get_environment_string()
+    environment_data = utils.read_yaml(environment_string)
+
+    repositories_path = get_repositories_path()
 
     repositories = []
     cloned_repositories = False
-    for item in conf["dependencies"]:
+    for item in environment_data["dependencies"]:
         if "git" in item:
             for repo in item["git"]:
 
@@ -214,7 +74,164 @@ def main():
 
                 repositories.append(data)
 
+    return repositories, cloned_repositories
+
+
+def export():
+    environment_string = utils.get_environment_string()
+    environment_data = utils.read_yaml(environment_string)
+
+    repositories_path = get_repositories_path()
+
+    # Get commit hash and name from repositories on disk.
+    disk_repos = {}
+    for repo in os.listdir(repositories_path):
+        path = os.path.join(repositories_path, repo)
+        if not os.path.exists(os.path.join(path, ".git")):
+            continue
+
+        commit_hash = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=path
+        ).rsplit()[0]
+
+        disk_repos[repo] = commit_hash
+
+    # Construct new git dependencies.
+    git_data = {"git": []}
+    for item in environment_data["dependencies"]:
+        if "git" in item:
+            for repo in item["git"]:
+
+                # Get url from enviroment file.
+                url = ""
+                if isinstance(repo, str):
+                    url = repo
+                if isinstance(repo, dict):
+                    url = repo.keys()[0]
+
+                # Skip any repositories that aren't cloned yet.
+                name = url.split("/")[-1].replace(".git", "").split("@")[0]
+                if name not in disk_repos.keys():
+                    continue
+
+                # Construct commit url if requested.
+                commit_url = url.split("@")[0]
+                if not utils.get_arguments()["export-without-commit"]:
+                    commit_url += "@" + disk_repos[name]
+
+                if isinstance(repo, str):
+                    git_data["git"].append(commit_url)
+
+                if isinstance(repo, dict):
+                    git_data["git"].append({commit_url: repo[url]})
+
+    # Replace git dependencies
+    for item in environment_data["dependencies"]:
+        if "git" in item:
+            environment_data["dependencies"].remove(item)
+
+    environment_data["dependencies"].append(git_data)
+
+    # Lock down conda and pip dependencies
+    locked_environment = utils.read_yaml(
+        subprocess.check_output(["conda", "env", "export"])
+    )
+
+    dependencies = {}
+    for dependency in environment_data["dependencies"]:
+        if isinstance(dependency, str):
+            dependencies[dependency.split("=")[0]] = ""
+        if isinstance(dependency, dict):
+            if "pip" not in dependency:
+                continue
+            for pip_dependency in dependency["pip"]:
+                dependencies[pip_dependency.split("=")[0]] = ""
+
+    for dependency in locked_environment["dependencies"]:
+        if isinstance(dependency, str):
+            name = dependency.split("=")[0]
+            if name in dependencies:
+                dependencies[name] = dependency
+        if isinstance(dependency, dict):
+            if "pip" not in dependency:
+                continue
+            for pip_dependency in dependency["pip"]:
+                name = pip_dependency.split("=")[0]
+                if name in dependencies:
+                    dependencies[name] = pip_dependency
+
+    for dependency in environment_data["dependencies"]:
+        index = environment_data["dependencies"].index(dependency)
+        if isinstance(dependency, str):
+            version = dependencies[dependency.split("=")[0]]
+            if version:
+                environment_data["dependencies"][index] = version
+        if isinstance(dependency, dict):
+            if "pip" not in dependency:
+                continue
+            for pip_dependency in dependency["pip"]:
+                version = dependencies[pip_dependency.split("=")[0]]
+                if version:
+                    pip_dict = environment_data["dependencies"][index]
+                    pip_index = pip_dict["pip"].index(pip_dependency)
+                    pip_dict["pip"][pip_index] = version
+
+
+def export_zip_environment():
+    environment_string = utils.get_environment_string()
+    environment_data = utils.read_yaml(environment_string)
+
+    # Write environment file
+    utils.write_yaml(
+        environment_data, os.path.join(os.getcwd(), "environment.yml")
+    )
+
+    # Export deployment
+    print("Building deployment...")
+    zip_file = zipfile.ZipFile(
+        environment_data["name"] + ".zip", "w", zipfile.ZIP_DEFLATED
+    )
+
+    path = os.path.abspath(os.path.join(sys.executable, ".."))
+    files_to_zip = []
+    for root, dirs, files in os.walk(path, topdown=True):
+        for f in files:
+            files_to_zip.append(os.path.join(root, f))
+
+    for f in files_to_zip:
+        zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
+
+    zip_file.close()
+
+
+def main():
+
+    if not utils.check_executable("git"):
+        subprocess.call(
+            ["conda", "install", "-c", "anaconda", "git", "-y"]
+        )
+
+    # Export environment
+    if (utils.get_arguments()["export"] or
+       utils.get_arguments()["export-without-commit"]):
+        export()
+        return
+
+    if utils.get_arguments()["export-zip-environment"]:
+        export_zip_environment()
+        return
+
+    os.remove(utils.get_arguments()["unknown"][0])
+
+    repositories_path = get_repositories_path()
+
+    os.environ["CONDA_ENVIRONMENT_REPOSITORIES"] = repositories_path
+
+    # Kept for backwards compatibility
+    os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
+
     # Update repositories.
+    repositories, cloned_repositories = get_repositories_data()
     if utils.get_arguments()["update-repositories"] or cloned_repositories:
         for repo in repositories:
             print(repo["name"])
@@ -330,15 +347,6 @@ def main():
     if os.path.exists(utils.get_environment_path()):
         os.remove(utils.get_environment_path())
 
-    # Ensure subprocess is detached so closing connect will not also
-    # close launched applications.
-    options = {}
-    if not utils.get_arguments()["attached"]:
-        if sys.platform == "win32":
-            options["creationflags"] = subprocess.CREATE_NEW_CONSOLE
-        else:
-            options["preexec_fn"] = os.setsid
-
     # Setting update mode environment variable
     update_modes = []
     if utils.get_arguments()["update-environment"]:
@@ -350,7 +358,29 @@ def main():
     for mode in update_modes:
         os.environ["CONDA_GIT_UPDATE"] += mode + os.pathsep
 
+    run_commands
+
+
+def run_commands():
     # Execute environment update commands.
+    repositories = get_repositories_data()[0]
+
+    # Ensure subprocess is detached so closing connect will not also
+    # close launched applications.
+    options = {}
+
+    attached = False
+    if utils.get_arguments()["attached"]:
+        attached = True
+    if "CONDA_ATTACHED" in os.environ:
+        attached = True
+
+    if not attached:
+        if sys.platform == "win32":
+            options["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        else:
+            options["preexec_fn"] = os.setsid
+
     if utils.get_arguments()["update-environment"]:
         for repo in repositories:
             if "commands" in repo.keys():
@@ -369,7 +399,14 @@ def main():
                 os.environ.update(utils.read_environment())
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
                 print("Executing: " + cmd)
-                subprocess.call(cmd, shell=True, cwd=repo["path"], **options)
+                subprocess.call(cmd, cwd=repo["path"], **options)
+
+
+def try_run_commands():
+    try:
+        run_commands()
+    except:
+        pass
 
 
 if __name__ == "__main__":
