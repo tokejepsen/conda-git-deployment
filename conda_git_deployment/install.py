@@ -362,14 +362,17 @@ def main():
 
 
 def run_commands():
-    # Execute environment update commands.
-    repositories = get_repositories_data(
-        os.path.abspath(
-            os.path.join(
-                sys.executable, "..", "Lib", "site-packages", "repositories"
-            )
+    repositories_path = os.path.abspath(
+        os.path.join(
+            sys.executable, "..", "Lib", "site-packages", "repositories"
         )
-    )[0]
+    )
+
+    os.environ["CONDA_ENVIRONMENT_REPOSITORIES"] = repositories_path
+    os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
+
+    # Execute environment update commands.
+    repositories = get_repositories_data(repositories_path)[0]
 
     # Ensure subprocess is detached so closing connect will not also
     # close launched applications.
