@@ -2,11 +2,33 @@ import os
 import subprocess
 import tempfile
 import sys
-import platform
 import zipfile
 
 
 import utils
+
+
+def unzip_environment(environment_data):
+
+    # Remove existing environment
+    subprocess.call(
+        [
+            "conda",
+            "env",
+            "remove",
+            "--name",
+            environment_data["name"],
+            "-y"
+        ]
+    )
+
+    # Unzip environment
+    print "Unzipping environment..."
+    zip_ref = zipfile.ZipFile(utils.get_arguments()["environment"], "r")
+    zip_ref.extractall(
+        os.path.abspath(os.path.join(sys.executable, "..", "envs"))
+    )
+    zip_ref.close()
 
 
 def main():
@@ -104,27 +126,18 @@ def main():
 
         os.remove(environment_filename)
 
+    # Recreate the environment when updating
     if (utils.get_arguments()["environment"].endswith(".zip") and
        utils.get_arguments()["update-environment"]):
-        # Remove existing environment
-        subprocess.call(
-            [
-                "conda",
-                "env",
-                "remove",
-                "--name",
-                environment_data["name"],
-                "-y"
-            ]
-        )
+        unzip_environment(environment_data)
 
-        # Unzip environment
-        print "Unzipping environment..."
-        zip_ref = zipfile.ZipFile(utils.get_arguments()["environment"], "r")
-        zip_ref.extractall(
-            os.path.abspath(os.path.join(sys.executable, "..", "envs"))
-        )
-        zip_ref.close()
+    # Create environment when initially installing.
+    path = os.path.abspath(
+        os.path.join(sys.executable, "..", "envs", environment_data["name"])
+    )
+    if (utils.get_arguments()["environment"].endswith(".zip") and
+       not os.path.exists(path)):
+        unzip_environment(environment_data)
 
     # Enabling activation of environment to run the environment commands.
     path = os.path.abspath(
@@ -153,6 +166,21 @@ def main():
             "\npython -c \"from conda_git_deployment import install;"
             "install.try_run_commands()\""
         )
+
+    # Setting environment variables
+    repositories_path = os.path.abspath(
+        os.path.join(
+            sys.executable,
+            "..",
+            "envs",
+            environment_data["name"],
+            "Lib",
+            "site-packages",
+            "repositories"
+        )
+    )
+    os.environ["CONDA_ENVIRONMENT_REPOSITORIES"] = repositories_path
+    os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
 
     # Spawning a new process to get the correct python executable and
     # passing data via file on disk.

@@ -23,11 +23,9 @@ def get_repositories_path():
     )
 
 
-def get_repositories_data():
+def get_repositories_data(repositories_path):
     environment_string = utils.get_environment_string()
     environment_data = utils.read_yaml(environment_string)
-
-    repositories_path = get_repositories_path()
 
     repositories = []
     cloned_repositories = False
@@ -230,13 +228,10 @@ def main():
 
     repositories_path = get_repositories_path()
 
-    os.environ["CONDA_ENVIRONMENT_REPOSITORIES"] = repositories_path
-
-    # Kept for backwards compatibility
-    os.environ["CONDA_GIT_REPOSITORY"] = repositories_path
-
     # Update repositories.
-    repositories, cloned_repositories = get_repositories_data()
+    repositories, cloned_repositories = get_repositories_data(
+        repositories_path
+    )
     if utils.get_arguments()["update-repositories"] or cloned_repositories:
         for repo in repositories:
             print(repo["name"])
@@ -368,7 +363,13 @@ def main():
 
 def run_commands():
     # Execute environment update commands.
-    repositories = get_repositories_data()[0]
+    repositories = get_repositories_data(
+        os.path.abspath(
+            os.path.join(
+                sys.executable, "..", "Lib", "site-packages", "repositories"
+            )
+        )
+    )[0]
 
     # Ensure subprocess is detached so closing connect will not also
     # close launched applications.
@@ -409,6 +410,7 @@ def run_commands():
                 print("Executing: " + cmd)
                 subprocess.call(
                     cmd,
+                    shell=True,
                     cwd=repo["path"],
                     env=os.environ,
                     **options
