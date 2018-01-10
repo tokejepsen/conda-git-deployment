@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 import sys
 import platform
+import zipfile
 
 
 import utils
@@ -43,58 +44,87 @@ def main():
     os.environ["PYTHONPATH"] = path
 
     # Get environment data.
-    environment_string = utils.get_environment_string()
-    environment_data = utils.read_yaml(environment_string)
+    environment_data = {}
+    if utils.get_arguments()["environment"].endswith(".yml"):
+        environment_string = utils.get_environment_string()
+        environment_data = utils.read_yaml(environment_string)
+    if utils.get_arguments()["environment"].endswith(".zip"):
+        environment_data["name"] = os.path.basename(
+            utils.get_arguments()["environment"]
+        ).replace(".zip", "")
 
     os.environ["CONDA_ENVIRONMENT_NAME"] = environment_data["name"]
 
-    # Writing original environment to disk
+    # Create environment
+    return_code = True
+    environment_update = False
     data_file = os.path.join(
         tempfile.gettempdir(), 'data_%s.yml' % os.getpid()
     )
-    utils.write_yaml(environment_data, data_file)
+    if utils.get_arguments()["environment"].endswith(".yml"):
+        # Writing original environment to disk
+        utils.write_yaml(environment_data, data_file)
 
-    # Remove git from environment as its not supported by conda (yet).
-    for item in environment_data["dependencies"]:
-        if "git" in item:
-            index = environment_data["dependencies"].index(item)
-            del environment_data["dependencies"][index]
+        # Remove git from environment as its not supported by conda (yet).
+        for item in environment_data["dependencies"]:
+            if "git" in item:
+                index = environment_data["dependencies"].index(item)
+                del environment_data["dependencies"][index]
 
-    # Create environment file from passed environment.
-    environment_filename = os.path.join(
-        tempfile.gettempdir(), 'env_%s.yml' % os.getpid()
-    )
+        environment_filename = os.path.join(
+            tempfile.gettempdir(), 'env_%s.yml' % os.getpid()
+        )
 
-    utils.write_yaml(environment_data, environment_filename)
+        utils.write_yaml(environment_data, environment_filename)
 
-    args = ["conda", "env", "create"]
+        args = ["conda", "env", "create"]
 
-    # Force environment update/rebuild when requested by command.
-    if utils.get_arguments()["update-environment"]:
-        args.append("--force")
-
-    # Check whether the environment installed is different from the requested
-    # environment. Force environment update/rebuild if different.
-    environment_update = False
-
-    if utils.updates_available():
-        environment_update = True
-        if "--force" not in args:
+        # Force environment update/rebuild when requested by command.
+        if utils.get_arguments()["update-environment"]:
             args.append("--force")
 
-    path = utils.get_md5_path()
-    if not os.path.exists(os.path.dirname(path)):
-        os.makedirs(os.path.dirname(path))
+        # Check whether the environment installed is different from the
+        # requested environment. Force environment update/rebuild if different.
+        if utils.updates_available():
+            environment_update = True
+            if "--force" not in args:
+                args.append("--force")
 
-    with open(path, "w") as the_file:
-        the_file.write(utils.get_incoming_md5())
+        path = utils.get_md5_path()
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
 
-    # Create environment
-    args.extend(["-f", environment_filename])
+        with open(path, "w") as the_file:
+            the_file.write(utils.get_incoming_md5())
 
-    return_code = subprocess.call(args)
+        # Create environment
+        args.extend(["-f", environment_filename])
 
-    os.remove(environment_filename)
+        return_code = subprocess.call(args)
+
+        os.remove(environment_filename)
+
+    if (utils.get_arguments()["environment"].endswith(".zip") and
+       utils.get_arguments()["update-environment"]):
+        # Remove existing environment
+        subprocess.call(
+            [
+                "conda",
+                "env",
+                "remove",
+                "--name",
+                environment_data["name"],
+                "-y"
+            ]
+        )
+
+        # Unzip environment
+        print "Unzipping environment..."
+        zip_ref = zipfile.ZipFile(utils.get_arguments()["environment"], "r")
+        zip_ref.extractall(
+            os.path.abspath(os.path.join(sys.executable, "..", "envs"))
+        )
+        zip_ref.close()
 
     # Enabling activation of environment to run the environment commands.
     path = os.path.abspath(
