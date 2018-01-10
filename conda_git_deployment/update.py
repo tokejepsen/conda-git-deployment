@@ -87,6 +87,10 @@ if __name__ == "__main__":
        utils.get_arguments()["update-repositories"]):
         update()
 
+    # Attaching processes to parent
+    if utils.get_arguments()["attached"]:
+        os.environ["CONDA_ATTACHED"] = ""
+
     # Purge unused files
     print("Purging trash...")
     path = os.path.abspath(
@@ -104,4 +108,4 @@ if __name__ == "__main__":
 
     args.extend(sys.argv[1:])
 
-    subprocess.call(args)
+    subprocess.call(args, env=os.environ)

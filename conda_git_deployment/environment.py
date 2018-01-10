@@ -96,31 +96,70 @@ def main():
 
     os.remove(environment_filename)
 
+    # Enabling activation of environment to run the environment commands.
+    path = os.path.abspath(
+        os.path.join(
+            sys.executable,
+            "..",
+            "envs",
+            environment_data["name"],
+            "etc",
+            "conda",
+            "activate.d",
+            "run_commands.bat"
+        )
+    )
+
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+
+    with open(path, "w") as the_file:
+        the_file.write("set CONDA_ENVIRONMENT_CWD=\"%cd%\"")
+        the_file.write(
+            "\nset CONDA_ENVIRONMENT_PATH=%~dp0../../../Lib/site-packages/"
+            "repositories/{0}/environment.yml".format(environment_data["name"])
+        )
+        the_file.write(
+            "\npython -c \"from conda_git_deployment import install;"
+            "install.try_run_commands()\""
+        )
+
     # Spawning a new process to get the correct python executable and
     # passing data via file on disk.
-    platform_script = "environment.sh"
-    if platform.system().lower() == "windows":
-        platform_script = "environment.bat"
-
-    args = [os.path.join(os.path.dirname(__file__), platform_script),
-            environment_data["name"],
-            os.path.join(os.path.dirname(__file__), "install.py"),
-            data_file]
-
-    args.extend(sys.argv[1:])
+    args = [
+        os.path.abspath(
+            os.path.join(sys.executable, "..", "Scripts", "activate.bat")
+        ),
+        environment_data["name"],
+    ]
 
     # If its the first installation, we need to pass update to install.py
+    update_environment = False
     if not return_code:
-        args.append("--update-environment")
-
-    if platform.system().lower() != "windows":
-        args.insert(0, "bash")
+        update_environment = True
 
     if environment_update and "--update-environment" not in args:
+        update_environment = True
+
+    # Only if we are updating the environment, are we going to run the
+    # repositories installation. Else the environment is self contained.
+    if update_environment:
+        os.environ["CONDA_SKIP_COMMANDS"] = ""
+
+        args.extend(
+            [
+                "&",
+                "python",
+                os.path.join(os.path.dirname(__file__), "install.py"),
+                data_file
+            ]
+        )
+
         args.append("--update-environment")
 
-    subprocess.call(args)
+        args.extend(sys.argv[1:])
 
+    subprocess.call(args, env=os.environ)
 
 if __name__ == "__main__":
 

@@ -137,6 +137,14 @@ print os.environ["CONDA_GIT_UPDATE"].split(os.sep)
 
 **NOTE: If no updating is happening, the environment variable will not be available.**
 
+#### ```CONDA_ATTACHED```
+
+When this variable is set to anything, the processes an environment produces from the commands will be attached to the parent process.
+
+#### ```CONDA_SKIP_COMMANDS```
+
+When this variable is set to anything, the activation of the environment will skip the commands.
+
 ### Arguments
 
 To facilitate different uses, the ```startup``` executables has a number of arguments.

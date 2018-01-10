@@ -223,6 +223,11 @@ def main():
 
     os.remove(utils.get_arguments()["unknown"][0])
 
+    # The activation script will point to a non-existent file, so we need to
+    # change where it gets the environment data from.
+    os.environ["CONDA_ENVIRONMENT_CWD"] = os.getcwd()
+    os.environ["CONDA_ENVIRONMENT_PATH"] = utils.get_arguments()["environment"]
+
     repositories_path = get_repositories_path()
 
     os.environ["CONDA_ENVIRONMENT_REPOSITORIES"] = repositories_path
@@ -358,7 +363,7 @@ def main():
     for mode in update_modes:
         os.environ["CONDA_GIT_UPDATE"] += mode + os.pathsep
 
-    run_commands
+    run_commands()
 
 
 def run_commands():
@@ -389,7 +394,10 @@ def run_commands():
                     cmd = cmd.replace("$REPO_PATH", repo["path"])
                     print("Executing: " + cmd)
                     subprocess.call(
-                        cmd, shell=True, cwd=repo["path"], **options
+                        cmd,
+                        shell=True,
+                        cwd=repo["path"],
+                        **options
                     )
 
     # Execute launch commands.
@@ -399,7 +407,12 @@ def run_commands():
                 os.environ.update(utils.read_environment())
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
                 print("Executing: " + cmd)
-                subprocess.call(cmd, cwd=repo["path"], **options)
+                subprocess.call(
+                    cmd,
+                    cwd=repo["path"],
+                    env=os.environ,
+                    **options
+                )
 
 
 def try_run_commands():
