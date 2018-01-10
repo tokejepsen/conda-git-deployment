@@ -159,7 +159,25 @@ def main():
 
         args.extend(sys.argv[1:])
 
+    # If exporting the environment we can skip the commands.
+    if (utils.get_arguments()["export"] or
+       utils.get_arguments()["export-without-commit"] or
+       utils.get_arguments()["export-zip-environment"]):
+        os.environ["CONDA_SKIP_COMMANDS"] = ""
+
+        args.extend(
+            [
+                "&",
+                "python",
+                os.path.join(os.path.dirname(__file__), "install.py"),
+                data_file
+            ]
+        )
+
+        args.extend(sys.argv[1:])
+
     subprocess.call(args, env=os.environ)
+
 
 if __name__ == "__main__":
 

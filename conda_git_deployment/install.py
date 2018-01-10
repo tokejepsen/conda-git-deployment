@@ -416,6 +416,9 @@ def run_commands():
 
 
 def try_run_commands():
+    if "CONDA_SKIP_COMMANDS" in os.environ.keys():
+        return
+
     try:
         run_commands()
     except:
