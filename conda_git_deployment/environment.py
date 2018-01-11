@@ -165,7 +165,7 @@ def main():
         )
         the_file.write(
             "\npython -c \"from conda_git_deployment import install;"
-            "install.try_run_commands()\""
+            "install.run_commands()\""
         )
 
     # Setting environment variables

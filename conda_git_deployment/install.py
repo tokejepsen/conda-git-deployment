@@ -376,6 +376,9 @@ def merge_environments(source, target):
 
 
 def run_commands():
+    if "CONDA_SKIP_COMMANDS" in os.environ.keys():
+        return
+
     repositories_path = os.path.abspath(
         os.path.join(
             sys.executable, "..", "Lib", "site-packages", "repositories"
@@ -440,13 +443,6 @@ def run_commands():
                     env=os.environ,
                     **options
                 )
-
-
-def try_run_commands():
-    if "CONDA_SKIP_COMMANDS" in os.environ.keys():
-        return
-
-    run_commands()
 
 
 if __name__ == "__main__":
