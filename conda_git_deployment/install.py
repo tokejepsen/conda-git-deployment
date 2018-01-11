@@ -363,16 +363,18 @@ def main():
 
 def merge_environments(source, target):
 
-    for key, value in target.iteritems():
-        if key in source.keys() and value in source[key]:
-            continue
+    results = {}
 
-        try:
-            source[key] += os.pathsep + value
-        except KeyError:
-            source[key] = value
+    for d in [source, target]:
+        for key, value in d.iteritems():
+            if key in results.keys():
+                for path in value.split(os.pathsep):
+                    if path not in results[key]:
+                        results[key] += os.pathsep + path
+            else:
+                results[key] = value
 
-    return source
+    return results
 
 
 def run_commands():
@@ -440,7 +442,6 @@ def run_commands():
                     cmd,
                     shell=True,
                     cwd=repo["path"],
-                    env=os.environ,
                     **options
                 )
 
