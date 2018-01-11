@@ -364,6 +364,9 @@ def main():
 def merge_environments(source, target):
 
     for key, value in target.iteritems():
+        if key in source.keys() and value in source[key]:
+            continue
+
         try:
             source[key] += os.pathsep + value
         except KeyError:
@@ -432,6 +435,7 @@ def run_commands():
                 print("Executing: " + cmd)
                 subprocess.call(
                     cmd,
+                    shell=True,
                     cwd=repo["path"],
                     env=os.environ,
                     **options
@@ -442,10 +446,7 @@ def try_run_commands():
     if "CONDA_SKIP_COMMANDS" in os.environ.keys():
         return
 
-    try:
-        run_commands()
-    except:
-        pass
+    run_commands()
 
 
 if __name__ == "__main__":
