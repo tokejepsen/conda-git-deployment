@@ -5,6 +5,7 @@ import tempfile
 import shutil
 
 import utils
+import environment
 
 
 def update():
@@ -94,21 +95,7 @@ if __name__ == "__main__":
     if utils.get_arguments()["attached"]:
         os.environ["CONDA_ATTACHED"] = ""
 
-    # Purge unused files
-    print("Purging trash...")
-    path = os.path.abspath(
-        os.path.join(sys.executable, "..", "pkgs", ".trash")
-    )
-    purge_directories(path)
-
     os.environ["CONDA_ENVIRONMENT_PATH"] = utils.get_environment()
     os.environ["CONDA_ENVIRONMENT_CWD"] = os.getcwd()
 
-    # Execute install
-    args = [
-        "python", os.path.join(os.path.dirname(__file__), "environment.py")
-    ]
-
-    args.extend(sys.argv[1:])
-
-    subprocess.call(args, env=os.environ)
+    environment.main()

@@ -361,6 +361,17 @@ def main():
     run_commands()
 
 
+def merge_environments(source, target):
+
+    for key, value in target.iteritems():
+        try:
+            source[key] += os.pathsep + value
+        except KeyError:
+            source[key] = value
+
+    return source
+
+
 def run_commands():
     repositories_path = os.path.abspath(
         os.path.join(
@@ -394,7 +405,11 @@ def run_commands():
         for repo in repositories:
             if "commands" in repo.keys():
                 for cmd in repo["commands"]["on_environment_update"]:
-                    os.environ.update(utils.read_environment())
+                    os.environ.update(
+                        merge_environments(
+                            os.environ, utils.read_environment()
+                        )
+                    )
                     cmd = cmd.replace("$REPO_PATH", repo["path"])
                     print("Executing: " + cmd)
                     subprocess.call(
@@ -408,12 +423,15 @@ def run_commands():
     for repo in repositories:
         if "commands" in repo.keys():
             for cmd in repo["commands"]["on_launch"]:
-                os.environ.update(utils.read_environment())
+                os.environ.update(
+                    merge_environments(
+                        os.environ, utils.read_environment()
+                    )
+                )
                 cmd = cmd.replace("$REPO_PATH", repo["path"])
                 print("Executing: " + cmd)
                 subprocess.call(
                     cmd,
-                    shell=True,
                     cwd=repo["path"],
                     env=os.environ,
                     **options

@@ -157,7 +157,8 @@ def main():
         os.makedirs(os.path.dirname(path))
 
     with open(path, "w") as the_file:
-        the_file.write("set CONDA_ENVIRONMENT_CWD=\"%cd%\"")
+        the_file.write("set CONDA_ENVIRONMENT_CWD=%cd%")
+        the_file.write("\nset PYTHONPATH=%cd%")
         the_file.write(
             "\nset CONDA_ENVIRONMENT_PATH=%~dp0../../../Lib/site-packages/"
             "repositories/{0}/environment.yml".format(environment_data["name"])
