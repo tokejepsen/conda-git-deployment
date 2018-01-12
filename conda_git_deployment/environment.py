@@ -76,29 +76,12 @@ def main():
 
     # If no environment is defined, put user in root environment.
     # Or if requested to put user into the root environment.
-    if not utils.get_environment() or utils.get_environment() == "root":
-
-        msg = ""
-
-        if not utils.get_environment():
-            msg += (
-                "\n\nCould not find the \"environment.conf\" file in "
-                "\"{path}\".\nPlease create an environment pointer file and "
-                "save it as \"{path}/environment.conf\".\nYou can also modify "
-                "the included example \"{path}/environment.conf.example\", and"
-                " rename to \"{path}/environment.conf\"."
-            )
-
-        msg += (
-            "\n\nYou are in the root environment of Conda. The \"conda\", "
-            "\"activate\" and \"deactivate\" command is ""available to use "
-            "now."
+    environment = utils.get_arguments()["environment"]
+    if not environment or environment == "root":
+        print(
+            "You are in the base environment of Conda. The \"conda\", "
+            "\"activate\" and \"deactivate\" command is available to use now."
         )
-        path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        path = path.replace("\\", "/")
-
-        print(msg.format(path=path))
-
         return
 
     # Add conda_git_deployment module to environment.

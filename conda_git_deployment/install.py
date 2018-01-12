@@ -229,7 +229,7 @@ def main():
                     subprocess.call(["git", "checkout", tag], cwd=repo["path"])
 
         # Checkout environment repository
-        environment_path = utils.get_environment()
+        environment_path = utils.get_arguments()["environment"]
         if not os.path.exists(environment_path):
             # Determine environment repositories by matching passed environment
             # with repositories

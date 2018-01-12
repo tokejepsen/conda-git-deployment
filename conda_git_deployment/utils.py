@@ -6,24 +6,6 @@ import tempfile
 import hashlib
 
 
-def get_environment():
-    """Get the environment path from either the arguments or config file."""
-
-    environment_path = ""
-
-    configuration_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "environment.conf")
-    )
-    if os.path.exists(configuration_path):
-        with open(configuration_path, "r") as f:
-            environment_path = f.read().rstrip()
-
-    if get_arguments()["environment"]:
-        environment_path = get_arguments()["environment"]
-
-    return environment_path
-
-
 def symlink_directory(source, target):
 
     if not check_module("ntfsutils"):

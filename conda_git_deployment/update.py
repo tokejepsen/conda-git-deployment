@@ -90,7 +90,7 @@ if __name__ == "__main__":
        utils.get_arguments()["update-repositories"]):
         update()
 
-    os.environ["CONDA_ENVIRONMENT_PATH"] = utils.get_environment()
+    os.environ["CONDA_ENVIRONMENT_PATH"] = utils.get_arguments()["environment"]
     os.environ["CONDA_ENVIRONMENT_CWD"] = os.getcwd()
 
     environment.main()
