@@ -65,6 +65,7 @@ def export_deployment():
 
     from tqdm import tqdm
 
+    path = os.path.abspath(os.path.join(__file__, "..", ".."))
     for f in tqdm(files_to_zip, "Zipping deployment"):
         zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
 
