@@ -175,33 +175,6 @@ def export():
                     pip_dict["pip"][pip_index] = version
 
 
-def export_zip_environment():
-    environment_string = utils.get_environment_string()
-    environment_data = utils.read_yaml(environment_string)
-
-    # Write environment file
-    utils.write_yaml(
-        environment_data, os.path.join(os.getcwd(), "environment.yml")
-    )
-
-    # Export deployment
-    print("Building deployment...")
-    zip_file = zipfile.ZipFile(
-        environment_data["name"] + ".zip", "w", zipfile.ZIP_DEFLATED
-    )
-
-    path = os.path.abspath(os.path.join(sys.executable, ".."))
-    files_to_zip = []
-    for root, dirs, files in os.walk(path, topdown=True):
-        for f in files:
-            files_to_zip.append(os.path.join(root, f))
-
-    for f in files_to_zip:
-        zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
-
-    zip_file.close()
-
-
 def main():
 
     if not utils.check_executable("git"):
@@ -213,10 +186,6 @@ def main():
     if (utils.get_arguments()["export"] or
        utils.get_arguments()["export-without-commit"]):
         export()
-        return
-
-    if utils.get_arguments()["export-zip-environment"]:
-        export_zip_environment()
         return
 
     os.remove(utils.get_arguments()["unknown"][0])

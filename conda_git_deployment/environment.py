@@ -4,31 +4,7 @@ import tempfile
 import sys
 import zipfile
 
-
 import utils
-
-
-def unzip_environment(environment_data):
-
-    # Remove existing environment
-    subprocess.call(
-        [
-            "conda",
-            "env",
-            "remove",
-            "--name",
-            environment_data["name"],
-            "-y"
-        ]
-    )
-
-    # Unzip environment
-    print "Unzipping environment..."
-    zip_ref = zipfile.ZipFile(utils.get_arguments()["environment"], "r")
-    zip_ref.extractall(
-        os.path.abspath(os.path.join(sys.executable, "..", "envs"))
-    )
-    zip_ref.close()
 
 
 def main():
@@ -66,16 +42,15 @@ def main():
     os.environ["PYTHONPATH"] = path
 
     # Get environment data.
-    environment_data = {}
-    if utils.get_arguments()["environment"].endswith(".yml"):
-        environment_string = utils.get_environment_string()
-        environment_data = utils.read_yaml(environment_string)
-    if utils.get_arguments()["environment"].endswith(".zip"):
-        environment_data["name"] = os.path.basename(
-            utils.get_arguments()["environment"]
-        ).replace(".zip", "")
+    environment_string = utils.get_environment_string()
+    environment_data = utils.read_yaml(environment_string)
 
     os.environ["CONDA_ENVIRONMENT_NAME"] = environment_data["name"]
+
+    # Export deployment
+    if utils.get_arguments()["export-deployment"]:
+        export_deployment()
+        return
 
     # Create environment
     return_code = True
@@ -83,61 +58,48 @@ def main():
     data_file = os.path.join(
         tempfile.gettempdir(), 'data_%s.yml' % os.getpid()
     )
-    if utils.get_arguments()["environment"].endswith(".yml"):
-        # Writing original environment to disk
-        utils.write_yaml(environment_data, data_file)
 
-        # Remove git from environment as its not supported by conda (yet).
-        for item in environment_data["dependencies"]:
-            if "git" in item:
-                index = environment_data["dependencies"].index(item)
-                del environment_data["dependencies"][index]
+    # Writing original environment to disk
+    utils.write_yaml(environment_data, data_file)
 
-        environment_filename = os.path.join(
-            tempfile.gettempdir(), 'env_%s.yml' % os.getpid()
-        )
+    # Remove git from environment as its not supported by conda (yet).
+    for item in environment_data["dependencies"]:
+        if "git" in item:
+            index = environment_data["dependencies"].index(item)
+            del environment_data["dependencies"][index]
 
-        utils.write_yaml(environment_data, environment_filename)
+    environment_filename = os.path.join(
+        tempfile.gettempdir(), 'env_%s.yml' % os.getpid()
+    )
 
-        args = ["conda", "env", "create"]
+    utils.write_yaml(environment_data, environment_filename)
 
-        # Force environment update/rebuild when requested by command.
-        if utils.get_arguments()["update-environment"]:
+    args = ["conda", "env", "create"]
+
+    # Force environment update/rebuild when requested by command.
+    if utils.get_arguments()["update-environment"]:
+        args.append("--force")
+
+    # Check whether the environment installed is different from the
+    # requested environment. Force environment update/rebuild if different.
+    if utils.updates_available():
+        environment_update = True
+        if "--force" not in args:
             args.append("--force")
 
-        # Check whether the environment installed is different from the
-        # requested environment. Force environment update/rebuild if different.
-        if utils.updates_available():
-            environment_update = True
-            if "--force" not in args:
-                args.append("--force")
+    path = utils.get_md5_path()
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
 
-        path = utils.get_md5_path()
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
+    with open(path, "w") as the_file:
+        the_file.write(utils.get_incoming_md5())
 
-        with open(path, "w") as the_file:
-            the_file.write(utils.get_incoming_md5())
+    # Create environment
+    args.extend(["-f", environment_filename])
 
-        # Create environment
-        args.extend(["-f", environment_filename])
+    return_code = subprocess.call(args)
 
-        return_code = subprocess.call(args)
-
-        os.remove(environment_filename)
-
-    # Recreate the environment when updating
-    if (utils.get_arguments()["environment"].endswith(".zip") and
-       utils.get_arguments()["update-environment"]):
-        unzip_environment(environment_data)
-
-    # Create environment when initially installing.
-    path = os.path.abspath(
-        os.path.join(sys.executable, "..", "envs", environment_data["name"])
-    )
-    if (utils.get_arguments()["environment"].endswith(".zip") and
-       not os.path.exists(path)):
-        unzip_environment(environment_data)
+    os.remove(environment_filename)
 
     # Enabling activation of environment to run the environment commands.
     path = os.path.abspath(
@@ -221,8 +183,7 @@ def main():
 
     # If exporting the environment we can skip the commands.
     if (utils.get_arguments()["export"] or
-       utils.get_arguments()["export-without-commit"] or
-       utils.get_arguments()["export-zip-environment"]):
+       utils.get_arguments()["export-without-commit"]):
         os.environ["CONDA_SKIP_COMMANDS"] = ""
 
         args.extend(
@@ -237,6 +198,70 @@ def main():
         args.extend(sys.argv[1:])
 
     subprocess.call(args, env=os.environ)
+
+
+def export_deployment():
+    # Export deployment
+    print("Exporting deployment...")
+    zip_file = zipfile.ZipFile("deployment.zip", "w", zipfile.ZIP_DEFLATED)
+
+    path = os.path.abspath(os.path.join(__file__, "..", ".."))
+    files_to_zip = []
+    file_exclusion = [
+        os.path.abspath(os.path.join(__file__, "..", "..", "deployment.zip"))
+    ]
+    extension_exclusion = [".pyc"]
+    directory_exclusion = [
+        os.path.abspath(os.path.join(__file__, "..", "..", "installers")),
+        os.path.abspath(os.path.join(__file__, "..", "..", "repositories")),
+        os.path.abspath(
+            os.path.join(
+                __file__, "..", "..", "installation", "windows", "pkgs"
+            )
+        ),
+    ]
+
+    # Only export the environment requested
+    environment_string = utils.get_environment_string()
+    environment_data = utils.read_yaml(environment_string)
+    envs_directory = os.path.abspath(
+        os.path.join(
+            __file__, "..", "..", "installation", "windows", "envs"
+        )
+    )
+    for directory in os.listdir(envs_directory):
+        if directory != environment_data["name"]:
+            directory_exclusion.append(os.path.join(envs_directory, directory))
+
+    # Find all files to zip
+    for root, dirs, files in os.walk(path, topdown=True, followlinks=True):
+        valid_directories = []
+        for d in dirs:
+            if os.path.join(root, d) not in directory_exclusion:
+                valid_directories.append(d)
+        dirs[:] = valid_directories
+
+        for f in files:
+            path = os.path.join(root, f)
+            if path in file_exclusion:
+                continue
+
+            # Exclude compiled python files
+            if os.path.splitext(f)[1] in extension_exclusion:
+                continue
+
+            files_to_zip.append(path)
+
+    # Zip deployment
+    if not utils.check_module("tqdm"):
+        subprocess.call(["pip", "install", "tqdm"])
+
+    from tqdm import tqdm
+
+    for f in tqdm(files_to_zip, "Zipping deployment"):
+        zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
+
+    zip_file.close()
 
 
 if __name__ == "__main__":

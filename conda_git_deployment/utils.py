@@ -218,11 +218,11 @@ def get_arguments():
         help="Exports the environment, without commit ids."
     )
     parser.add_argument(
-        "--export-zip-environment",
+        "--export-deployment",
         action="store_true",
         default=False,
-        dest="export-zip-environment",
-        help="Exports the environment files as zip."
+        dest="export-deployment",
+        help="Exports the deployment as zip."
     )
 
     args, unknown = parser.parse_known_args()
