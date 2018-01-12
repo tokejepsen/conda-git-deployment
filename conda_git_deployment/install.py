@@ -1,8 +1,6 @@
 import os
 import sys
 import subprocess
-import tempfile
-import platform
 from difflib import SequenceMatcher
 
 import utils
