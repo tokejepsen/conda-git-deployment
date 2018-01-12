@@ -183,13 +183,6 @@ def get_arguments():
         help="Environment to process."
     )
     parser.add_argument(
-        "--attached",
-        action="store_true",
-        default=False,
-        dest="attached",
-        help="Spawn non-detached processes."
-    )
-    parser.add_argument(
         "--update-environment",
         action="store_true",
         default=False,

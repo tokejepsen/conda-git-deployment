@@ -1,1 +1,1 @@
-%~dp0/../startup.bat --update-environment %*
+%~dp0../startup.bat --update-environment %*

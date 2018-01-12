@@ -332,13 +332,7 @@ def run_commands():
     # close launched applications.
     options = {}
 
-    attached = False
-    if utils.get_arguments()["attached"]:
-        attached = True
-    if "CONDA_ATTACHED" in os.environ:
-        attached = True
-
-    if not attached:
+    if "CONDA_ATTACHED" not in os.environ:
         if sys.platform == "win32":
             options["creationflags"] = subprocess.CREATE_NEW_CONSOLE
         else:

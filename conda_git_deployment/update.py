@@ -90,10 +90,6 @@ if __name__ == "__main__":
        utils.get_arguments()["update-repositories"]):
         update()
 
-    # Attaching processes to parent
-    if utils.get_arguments()["attached"]:
-        os.environ["CONDA_ATTACHED"] = ""
-
     os.environ["CONDA_ENVIRONMENT_PATH"] = utils.get_environment()
     os.environ["CONDA_ENVIRONMENT_CWD"] = os.getcwd()
 

@@ -152,11 +152,11 @@ To facilitate different uses, the ```startup``` executables has a number of argu
 Argument | Description | Example
 --- | --- | ---
 environment | Environment file to process. | ```startup --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
-attached | Spawn non-detached processes. | ```startup --attached --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 update-environment | Update and rebuild environment. | ```startup --update-environment --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 update-repositories | Update and rebuild repositories. | ```startup --update-repositories --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 export | Exports the environment. | ```startup --export --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 export-without-commit | Exports the environment, without commit ids. | ```startup --export-without-commit --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
+export-deployment | Exports a deployment as zip file. | ```startup --export-deployment --environment https://raw.githubusercontent.com/tokejepsen/conda-git-example/master/environment.yml```
 
 ### Configuration
 

@@ -1,3 +1,1 @@
-cd %~dp0
-cd ..
-startup.bat --update-environment --update-repositories %*
+%~dp0..\startup.bat --update-environment --update-repositories %*
