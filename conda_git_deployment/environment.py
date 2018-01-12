@@ -7,6 +7,70 @@ import zipfile
 import utils
 
 
+def export_deployment():
+    # Export deployment
+    print("Exporting deployment...")
+    zip_file = zipfile.ZipFile("deployment.zip", "w", zipfile.ZIP_DEFLATED)
+
+    path = os.path.abspath(os.path.join(__file__, "..", ".."))
+    files_to_zip = []
+    file_exclusion = [
+        os.path.abspath(os.path.join(__file__, "..", "..", "deployment.zip"))
+    ]
+    extension_exclusion = [".pyc"]
+    directory_exclusion = [
+        os.path.abspath(os.path.join(__file__, "..", "..", "installers")),
+        os.path.abspath(os.path.join(__file__, "..", "..", "repositories")),
+        os.path.abspath(
+            os.path.join(
+                __file__, "..", "..", "installation", "windows", "pkgs"
+            )
+        ),
+    ]
+
+    # Only export the environment requested
+    environment_string = utils.get_environment_string()
+    environment_data = utils.read_yaml(environment_string)
+    envs_directory = os.path.abspath(
+        os.path.join(
+            __file__, "..", "..", "installation", "windows", "envs"
+        )
+    )
+    for directory in os.listdir(envs_directory):
+        if directory != environment_data["name"]:
+            directory_exclusion.append(os.path.join(envs_directory, directory))
+
+    # Find all files to zip
+    for root, dirs, files in os.walk(path, topdown=True, followlinks=True):
+        valid_directories = []
+        for d in dirs:
+            if os.path.join(root, d) not in directory_exclusion:
+                valid_directories.append(d)
+        dirs[:] = valid_directories
+
+        for f in files:
+            path = os.path.join(root, f)
+            if path in file_exclusion:
+                continue
+
+            # Exclude compiled python files
+            if os.path.splitext(f)[1] in extension_exclusion:
+                continue
+
+            files_to_zip.append(path)
+
+    # Zip deployment
+    if not utils.check_module("tqdm"):
+        subprocess.call(["pip", "install", "tqdm"])
+
+    from tqdm import tqdm
+
+    for f in tqdm(files_to_zip, "Zipping deployment"):
+        zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
+
+    zip_file.close()
+
+
 def main():
 
     # If no environment is defined, put user in root environment.
@@ -198,70 +262,6 @@ def main():
         args.extend(sys.argv[1:])
 
     subprocess.call(args, env=os.environ)
-
-
-def export_deployment():
-    # Export deployment
-    print("Exporting deployment...")
-    zip_file = zipfile.ZipFile("deployment.zip", "w", zipfile.ZIP_DEFLATED)
-
-    path = os.path.abspath(os.path.join(__file__, "..", ".."))
-    files_to_zip = []
-    file_exclusion = [
-        os.path.abspath(os.path.join(__file__, "..", "..", "deployment.zip"))
-    ]
-    extension_exclusion = [".pyc"]
-    directory_exclusion = [
-        os.path.abspath(os.path.join(__file__, "..", "..", "installers")),
-        os.path.abspath(os.path.join(__file__, "..", "..", "repositories")),
-        os.path.abspath(
-            os.path.join(
-                __file__, "..", "..", "installation", "windows", "pkgs"
-            )
-        ),
-    ]
-
-    # Only export the environment requested
-    environment_string = utils.get_environment_string()
-    environment_data = utils.read_yaml(environment_string)
-    envs_directory = os.path.abspath(
-        os.path.join(
-            __file__, "..", "..", "installation", "windows", "envs"
-        )
-    )
-    for directory in os.listdir(envs_directory):
-        if directory != environment_data["name"]:
-            directory_exclusion.append(os.path.join(envs_directory, directory))
-
-    # Find all files to zip
-    for root, dirs, files in os.walk(path, topdown=True, followlinks=True):
-        valid_directories = []
-        for d in dirs:
-            if os.path.join(root, d) not in directory_exclusion:
-                valid_directories.append(d)
-        dirs[:] = valid_directories
-
-        for f in files:
-            path = os.path.join(root, f)
-            if path in file_exclusion:
-                continue
-
-            # Exclude compiled python files
-            if os.path.splitext(f)[1] in extension_exclusion:
-                continue
-
-            files_to_zip.append(path)
-
-    # Zip deployment
-    if not utils.check_module("tqdm"):
-        subprocess.call(["pip", "install", "tqdm"])
-
-    from tqdm import tqdm
-
-    for f in tqdm(files_to_zip, "Zipping deployment"):
-        zip_file.write(f, os.path.relpath(f, os.path.dirname(path)))
-
-    zip_file.close()
 
 
 if __name__ == "__main__":
