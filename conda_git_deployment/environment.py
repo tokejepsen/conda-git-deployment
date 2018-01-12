@@ -197,7 +197,7 @@ def main():
     if not return_code:
         update_environment = True
 
-    if environment_update and "--update-environment" not in args:
+    if environment_update:
         update_environment = True
 
     # Only if we are updating the environment, are we going to run the
@@ -214,7 +214,8 @@ def main():
             ]
         )
 
-        args.append("--update-environment")
+        if "--update-environment" not in args:
+            args.append("--update-environment")
 
         args.extend(sys.argv[1:])
 
