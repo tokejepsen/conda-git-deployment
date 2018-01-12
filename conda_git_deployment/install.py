@@ -4,7 +4,6 @@ import subprocess
 import tempfile
 import platform
 from difflib import SequenceMatcher
-import zipfile
 
 import utils
 
@@ -281,37 +280,6 @@ def main():
                 cwd=os.path.join(symlink_directory, repo["name"])
             )
 
-    # Add environment site packages to os.environ
-    prefix = ""
-    if platform.system().lower() == "windows":
-        prefix = os.environ["CONDA_PREFIX"]
-    else:
-        prefix = os.environ["CONDA_ENV_PATH"]
-
-    path = os.path.join(prefix, "lib", "site-packages")
-    os.environ["PYTHONPATH"] += os.pathsep + path
-
-    # Add sys.path to os.environ["PYTHONPATH"], because conda only modifies
-    # sys.path which gets lost when launching any detached subprocesses.
-    # This get a little complicated due to being in a process that hasn"t
-    # picked up on the changes, hence going through a subprocess.
-    python_file = os.path.join(os.path.dirname(__file__), "write_sys_path.py")
-    data_file = os.path.join(
-        tempfile.gettempdir(), "data_%s.yml" % os.getpid()
-    )
-    subprocess.call(["python", python_file, data_file])
-
-    paths = []
-    with open(data_file, "r") as f:
-        paths += utils.read_yaml(f.read())
-    os.remove(data_file)
-
-    for path in paths:
-        if path.lower().startswith(repositories_path.lower()):
-            os.environ["PYTHONPATH"] += os.pathsep + path
-        if path.endswith(".egg"):
-            os.environ["PYTHONPATH"] += os.pathsep + path
-
     # Clean up any existing environment file
     if os.path.exists(utils.get_environment_path()):
         os.remove(utils.get_environment_path())
@@ -378,6 +346,21 @@ def run_commands():
         else:
             options["preexec_fn"] = os.setsid
 
+    # Add environment site packages to os.environ
+    path = os.path.abspath(
+        os.path.join(sys.executable, "..", "Lib", "site-packages")
+    )
+    os.environ["PYTHONPATH"] += os.pathsep + path
+
+    # Add sys.path to environment
+    for path in sys.path:
+        if path.lower().startswith(repositories_path.lower()):
+            os.environ["PYTHONPATH"] += os.pathsep + path
+        if path.endswith(".egg"):
+            os.environ["PYTHONPATH"] += os.pathsep + path
+
+    # Execute environment update commands
+    utils.write_environment({})
     if utils.get_arguments()["update-environment"]:
         for repo in repositories:
             if "commands" in repo.keys():
@@ -397,6 +380,7 @@ def run_commands():
                     )
 
     # Execute launch commands.
+    utils.write_environment({})
     for repo in repositories:
         if "commands" in repo.keys():
             for cmd in repo["commands"]["on_launch"]:
