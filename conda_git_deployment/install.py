@@ -218,35 +218,33 @@ def main():
             subprocess.call(["git", "checkout", "master"], cwd=repo["path"])
             subprocess.call(["git", "pull"], cwd=repo["path"])
 
-    # Checkout any commits/tags if there are newly cloned repositories or
-    # updating the repositories.
-    if utils.get_arguments()["update-repositories"] or cloned_repositories:
+    # Checkout any commits/tags
+    for repo in repositories:
+        if "@" in repo["url"]:
+            tag = repo["url"].split("@")[1]
+            if tag:
+                print(repo["name"])
+                subprocess.call(["git", "checkout", tag], cwd=repo["path"])
+
+    # Checkout environment repository
+    environment_path = utils.get_arguments()["environment"]
+    if not os.path.exists(environment_path):
+        # Determine environment repositories by matching passed environment
+        # with repositories
+        environment_repo = None
+        match = 0.0
         for repo in repositories:
-            if "@" in repo["url"]:
-                tag = repo["url"].split("@")[1]
-                if tag:
-                    print(repo["name"])
-                    subprocess.call(["git", "checkout", tag], cwd=repo["path"])
+            sequence_match = SequenceMatcher(
+                None, repo["url"], environment_path
+            ).ratio()
+            if match < sequence_match:
+                environment_repo = repo
 
-        # Checkout environment repository
-        environment_path = utils.get_arguments()["environment"]
-        if not os.path.exists(environment_path):
-            # Determine environment repositories by matching passed environment
-            # with repositories
-            environment_repo = None
-            match = 0.0
-            for repo in repositories:
-                sequence_match = SequenceMatcher(
-                    None, repo["url"], environment_path
-                ).ratio()
-                if match < sequence_match:
-                    environment_repo = repo
-
-            print(environment_repo["name"])
-            branch = environment_path.split("/")[-2]
-            subprocess.call(
-                ["git", "checkout", branch], cwd=environment_repo["path"]
-            )
+        print(environment_repo["name"])
+        branch = environment_path.split("/")[-2]
+        subprocess.call(
+            ["git", "checkout", branch], cwd=environment_repo["path"]
+        )
 
     # Symlink repositories into environments "site-packages"
     symlink_directory = os.path.abspath(
