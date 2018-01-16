@@ -14,9 +14,6 @@ def update():
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     subprocess.call(["git", "pull"], cwd=path)
 
-    # Update conda
-    subprocess.call(["conda", "update", "-n", "base", "conda", "-y"])
-
 
 def initialise_git():
 
