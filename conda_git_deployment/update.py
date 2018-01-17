@@ -38,8 +38,12 @@ def initialise_git():
         # Initialising git repository
         subprocess.call(["git", "init"], cwd=path)
         subprocess.call(["git", "add", "."], cwd=path)
-    except:
-        print("Making conda-git-deployment into git repository failed.")
+    except Exception as e:
+        print(
+            "Making conda-git-deployment into git repository failed: "
+            "{0}".format(e)
+        )
+    finally:
         shutil.rmtree(tempdir)
 
 
