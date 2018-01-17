@@ -44,6 +44,10 @@ def export_deployment():
     for root, dirs, files in os.walk(path, topdown=True, followlinks=True):
         valid_directories = []
         for d in dirs:
+            # Exclude git histories
+            if d == ".git":
+                continue
+
             if os.path.join(root, d) not in directory_exclusion:
                 valid_directories.append(d)
         dirs[:] = valid_directories
