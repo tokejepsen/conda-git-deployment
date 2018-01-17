@@ -105,8 +105,6 @@ def main():
         return
 
     # Create environment
-    return_code = True
-    environment_update = False
     data_file = os.path.join(
         tempfile.gettempdir(), 'data_%s.yml' % os.getpid()
     )
@@ -131,13 +129,6 @@ def main():
     # Force environment update/rebuild when requested by command.
     if utils.get_arguments()["update-environment"]:
         args.append("--force")
-
-    # Check whether the environment installed is different from the
-    # requested environment. Force environment update/rebuild if different.
-    if utils.updates_available():
-        environment_update = True
-        if "--force" not in args:
-            args.append("--force")
 
     path = utils.get_md5_path()
     if not os.path.exists(os.path.dirname(path)):
@@ -206,17 +197,9 @@ def main():
         environment_data["name"],
     ]
 
-    # If its the first installation, we need to pass update to install.py
-    update_environment = False
-    if not return_code:
-        update_environment = True
-
-    if environment_update:
-        update_environment = True
-
     # Only if we are updating the environment, are we going to run the
     # repositories installation. Else the environment is self contained.
-    if update_environment:
+    if not return_code or utils.get_arguments()["update-environment"]:
         os.environ["CONDA_SKIP_COMMANDS"] = ""
 
         args.extend(
@@ -230,11 +213,6 @@ def main():
 
         if "--update-environment" not in args:
             args.append("--update-environment")
-
-    # If exporting the environment we can skip the commands.
-    if (utils.get_arguments()["export"] or
-       utils.get_arguments()["export-without-commit"]):
-        os.environ["CONDA_SKIP_COMMANDS"] = ""
 
     args.extend(sys.argv[1:])
 
