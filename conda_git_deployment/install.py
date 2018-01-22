@@ -73,6 +73,7 @@ def get_repositories_data(repositories_path):
 
 
 def export():
+    print "Exporting environment..."
     environment_string = utils.get_environment_string()
     environment_data = utils.read_yaml(environment_string)
 
@@ -170,6 +171,8 @@ def export():
                     pip_dict = environment_data["dependencies"][index]
                     pip_index = pip_dict["pip"].index(pip_dependency)
                     pip_dict["pip"][pip_index] = version
+
+    utils.write_yaml(environment_data, "environment.yml")
 
 
 def main():
