@@ -315,7 +315,7 @@ def merge_environments(source, target):
 
 def run_commands():
 
-    if eval(os.environ.get("CONDA_SKIP_COMMANDS", "False")):
+    if bool(os.getenv("CONDA_SKIP_COMMANDS")):
         return
 
     repositories_path = os.path.abspath(
@@ -334,7 +334,7 @@ def run_commands():
     # close launched applications.
     options = {}
 
-    if not eval(os.environ.get("CONDA_ATTACHED", "False")):
+    if not bool(os.getenv("CONDA_ATTACHED")):
         if sys.platform == "win32":
             options["creationflags"] = subprocess.CREATE_NEW_CONSOLE
         else:
