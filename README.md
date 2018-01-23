@@ -139,11 +139,11 @@ print os.environ["CONDA_GIT_UPDATE"].split(os.sep)
 
 #### ```CONDA_ATTACHED```
 
-When this variable is set to anything, the processes an environment produces from the commands will be attached to the parent process.
+When this variable is set to ```True```, the processes an environment produces from the commands will be attached to the parent process.
 
 #### ```CONDA_SKIP_COMMANDS```
 
-When this variable is set to anything, the activation of the environment will skip the commands.
+When this variable is set to ```True```, the activation of the environment will skip the commands.
 
 ### Arguments
 
