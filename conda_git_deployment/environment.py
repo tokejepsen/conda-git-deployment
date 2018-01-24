@@ -214,6 +214,8 @@ def main():
         if "--update-environment" not in args:
             args.append("--update-environment")
 
+        args.extend(sys.argv[1:])
+
     # When exporting we need the install.py
     if (utils.get_arguments()["export"] or
        utils.get_arguments()["export-without-commit"]):
@@ -228,7 +230,7 @@ def main():
             ]
         )
 
-    args.extend(sys.argv[1:])
+        args.extend(sys.argv[1:])
 
     subprocess.call(args, env=os.environ)
 
