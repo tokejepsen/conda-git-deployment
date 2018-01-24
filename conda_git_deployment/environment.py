@@ -200,7 +200,7 @@ def main():
     # Only if we are updating the environment, are we going to run the
     # repositories installation. Else the environment is self contained.
     if not return_code or utils.get_arguments()["update-environment"]:
-        os.environ["CONDA_SKIP_COMMANDS"] = ""
+        os.environ["CONDA_SKIP_COMMANDS"] = "True"
 
         args.extend(
             [
