@@ -217,7 +217,7 @@ def main():
     # When exporting we need the install.py
     if (utils.get_arguments()["export"] or
        utils.get_arguments()["export-without-commit"]):
-        os.environ["CONDA_SKIP_COMMANDS"] = ""
+        os.environ["CONDA_SKIP_COMMANDS"] = "True"
 
         args.extend(
             [
