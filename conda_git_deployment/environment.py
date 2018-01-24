@@ -229,7 +229,7 @@ def main():
         )
 
     args.extend(sys.argv[1:])
-    print args
+
     subprocess.call(args, env=os.environ)
 
 
