@@ -315,6 +315,9 @@ def merge_environments(source, target):
 
 def run_commands():
 
+    import json
+    print json.dumps(dict(os.environ), indent=4, sort_keys=True)
+    print bool(os.getenv("CONDA_SKIP_COMMANDS"))
     if bool(os.getenv("CONDA_SKIP_COMMANDS")):
         return
 
